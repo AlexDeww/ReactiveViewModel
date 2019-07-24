@@ -22,6 +22,10 @@ fun <T> Event<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>): Ob
 fun <T> State<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>): Observer<T> =
     liveData.observe(owner, action)
 
+fun Action<Unit>.call() {
+    call(Unit)
+}
+
 fun <T> Observable<T>.bindProgress(progressConsumer: Consumer<Boolean>): Observable<T> = this
     .doOnSubscribe { progressConsumer.accept(true) }
     .doFinally { progressConsumer.accept(false) }

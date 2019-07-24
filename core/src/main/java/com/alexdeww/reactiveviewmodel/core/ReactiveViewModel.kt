@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * https://github.com/dmdevgo/RxPM
  */
 
-abstract class ReactiveViewModel : ViewModel() {
+abstract class ReactiveViewModel : ViewModel(), RvmComponent {
 
     private val disposableList = CompositeDisposable()
 
@@ -27,32 +27,10 @@ abstract class ReactiveViewModel : ViewModel() {
         super.onCleared()
     }
 
-    protected fun Disposable.disposeOnCleared(): Disposable {
+    fun Disposable.disposeOnCleared(): Disposable {
         disposableList.add(this)
         return this
     }
-
-    protected fun <T> State<T>.setValue(value: T) {
-        this.consumer.accept(value)
-    }
-
-    protected fun <T> State<T>.setValueIfChanged(value: T) {
-        if (this.value != value) this.consumer.accept(value)
-    }
-
-    protected val <T> State<T>.consumer: Consumer<T> get() = this.consumer
-
-    protected val <T> Action<T>.observable: Observable<T> get() = this.observable
-
-    protected fun <T> Event<T>.call(value: T) {
-        this.consumer.accept(value)
-    }
-
-    protected fun Event<Unit>.call() {
-        this.consumer.accept(Unit)
-    }
-
-    protected val <T> Event<T>.consumer: Consumer<T> get() = this.consumer
 
     protected fun <T> state(initValue: T? = null): State<T> = State(initValue)
     protected fun <T> event(): Event<T> = Event()
@@ -62,7 +40,7 @@ abstract class ReactiveViewModel : ViewModel() {
 
 }
 
-class State<T>(initValue: T? = null) {
+class State<T> internal constructor(initValue: T? = null) {
 
     private val subject = if (initValue == null) {
         BehaviorSubject.create<T>()
@@ -92,7 +70,7 @@ class State<T>(initValue: T? = null) {
 
 }
 
-class Action<T> {
+class Action<T> internal constructor() {
 
     private val subject = PublishSubject.create<T>().toSerialized()
 
@@ -106,11 +84,7 @@ class Action<T> {
 
 }
 
-fun Action<Unit>.call() {
-    call(Unit)
-}
-
-class Event<T> {
+class Event<T> internal constructor() {
 
     private val subject = BehaviorSubject.create<T>()
     private val serializedSubject = subject.toSerialized()
