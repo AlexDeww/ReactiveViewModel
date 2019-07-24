@@ -3,6 +3,7 @@ package com.alexdeww.reactiveviewmodel.core
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
+import android.view.View
 import io.reactivex.*
 import io.reactivex.functions.BiFunction
 import io.reactivex.functions.Consumer
@@ -24,6 +25,19 @@ fun <T> State<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>): Ob
 
 fun Action<Unit>.call() {
     call(Unit)
+}
+
+typealias ActionOnClick = () -> Unit
+
+fun <T> Action<T>.bindOnClick(view: View, value: T, onClickAction: ActionOnClick? = null) {
+    view.setOnClickListener {
+        call(value)
+        onClickAction?.invoke()
+    }
+}
+
+fun Action<Unit>.bindOnClick(view: View, onClickAction: ActionOnClick? = null) {
+    bindOnClick(view, Unit, onClickAction)
 }
 
 fun <T> Observable<T>.bindProgress(progressConsumer: Consumer<Boolean>): Observable<T> = this
