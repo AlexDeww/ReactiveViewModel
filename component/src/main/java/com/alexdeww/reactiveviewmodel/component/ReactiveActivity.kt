@@ -9,7 +9,7 @@ abstract class ReactiveActivity : AppCompatActivity(), RvmAndroidComponent {
     private val disposableOnDestroyList = HashMap<String, Disposable>()
     private val disposableOnStopList = HashMap<String, Disposable>()
 
-    override val viewLifecycleOwner: LifecycleOwner
+    override val componentLifecycleOwner: LifecycleOwner
         get() = this
 
     override fun onStop() {

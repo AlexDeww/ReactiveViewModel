@@ -11,7 +11,7 @@ import io.reactivex.disposables.Disposable
 
 interface RvmAndroidComponent {
 
-    val viewLifecycleOwner: LifecycleOwner
+    val componentLifecycleOwner: LifecycleOwner
 
     fun Disposable.disposeOnDestroy(tag: String)
 
@@ -20,12 +20,12 @@ interface RvmAndroidComponent {
     fun Disposable.disposeOnDestroyView(tag: String)
 
     fun <T> LiveData<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
-        observe(viewLifecycleOwner, action)
+        observe(componentLifecycleOwner, action)
 
     fun <T> State<T>.observe(action: OnLiveDataAction<T>) =
-        observe(viewLifecycleOwner, action)
+        observe(componentLifecycleOwner, action)
 
     fun <T> Event<T>.observe(action: OnLiveDataAction<T>) =
-        observe(viewLifecycleOwner, action)
+        observe(componentLifecycleOwner, action)
 
 }

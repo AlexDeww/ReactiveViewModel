@@ -15,7 +15,7 @@ abstract class ReactiveFragment : Fragment(), RvmAndroidComponent {
     private val disposableOnStopList = HashMap<String, Disposable>()
     private val disposableOnDestroyViewList = HashMap<String, Disposable>()
 
-    override val viewLifecycleOwner: LifecycleOwner
+    override val componentLifecycleOwner: LifecycleOwner
         get() = _viewLifecycleOwner
             ?: throw IllegalStateException("Can't access the Fragment View's LifecycleOwner when getView() is null i.e., before onCreateView() or after onDestroyView()")
 
