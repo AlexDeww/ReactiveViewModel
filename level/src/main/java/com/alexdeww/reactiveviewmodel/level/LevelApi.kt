@@ -1,9 +1,9 @@
 package com.alexdeww.reactiveviewmodel.level
 
-import android.arch.lifecycle.LifecycleOwner
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
 
 typealias ApiLiveData<T> = LiveData<T>
 typealias ApiViewModel = ViewModel
