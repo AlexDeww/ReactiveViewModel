@@ -1,4 +1,4 @@
-package com.alexdeww.reactiveviewmodel.core.livedata
+package com.alexdeww.reactiveviewmodel.level.livedata
 
 import com.alexdeww.reactiveviewmodel.level.ApiLiveData
 

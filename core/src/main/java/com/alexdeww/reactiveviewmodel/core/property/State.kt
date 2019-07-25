@@ -1,7 +1,7 @@
 package com.alexdeww.reactiveviewmodel.core.property
 
 import android.annotation.SuppressLint
-import com.alexdeww.reactiveviewmodel.core.livedata.RvmLiveData
+import com.alexdeww.reactiveviewmodel.level.livedata.RvmLiveData
 import io.reactivex.Observable
 import io.reactivex.functions.Consumer
 import io.reactivex.subjects.BehaviorSubject

@@ -1,7 +1,6 @@
 package com.alexdeww.reactiveviewmodel.core.widget
 
 import android.annotation.SuppressLint
-import com.alexdeww.reactiveviewmodel.core.BaseControl
 
 @SuppressLint("CheckResult")
 class CheckControl internal constructor(

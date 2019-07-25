@@ -1,4 +1,4 @@
-package com.alexdeww.reactiveviewmodel.core
+package com.alexdeww.reactiveviewmodel.core.common
 
 import com.alexdeww.reactiveviewmodel.core.property.Action
 import com.alexdeww.reactiveviewmodel.core.property.Event

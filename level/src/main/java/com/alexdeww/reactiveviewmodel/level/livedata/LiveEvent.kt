@@ -1,4 +1,4 @@
-package com.alexdeww.reactiveviewmodel.level
+package com.alexdeww.reactiveviewmodel.level.livedata
 
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.MediatorLiveData

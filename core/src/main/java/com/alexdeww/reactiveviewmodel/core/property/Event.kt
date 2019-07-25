@@ -1,7 +1,7 @@
 package com.alexdeww.reactiveviewmodel.core.property
 
 import com.alexdeww.reactiveviewmodel.level.ApiLiveData
-import com.alexdeww.reactiveviewmodel.level.LiveEvent
+import com.alexdeww.reactiveviewmodel.level.livedata.LiveEvent
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Consumer

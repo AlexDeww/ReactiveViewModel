@@ -1,6 +1,5 @@
 package com.alexdeww.reactiveviewmodel.core.widget
 
-import com.alexdeww.reactiveviewmodel.core.BaseControl
 import io.reactivex.Maybe
 
 sealed class DialogResult {
