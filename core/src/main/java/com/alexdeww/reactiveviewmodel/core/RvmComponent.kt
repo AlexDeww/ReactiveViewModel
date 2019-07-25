@@ -1,5 +1,8 @@
 package com.alexdeww.reactiveviewmodel.core
 
+import com.alexdeww.reactiveviewmodel.core.property.Action
+import com.alexdeww.reactiveviewmodel.core.property.Event
+import com.alexdeww.reactiveviewmodel.core.property.State
 import io.reactivex.Observable
 import io.reactivex.functions.Consumer
 

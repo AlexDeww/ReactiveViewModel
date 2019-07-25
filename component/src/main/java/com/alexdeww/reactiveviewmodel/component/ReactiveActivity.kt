@@ -2,9 +2,10 @@ package com.alexdeww.reactiveviewmodel.component
 
 import android.arch.lifecycle.LifecycleOwner
 import android.support.v7.app.AppCompatActivity
+import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import io.reactivex.disposables.Disposable
 
-abstract class ReactiveActivity : AppCompatActivity(), RvmAndroidComponent {
+abstract class ReactiveActivity : AppCompatActivity(), RvmViewComponent {
 
     private val disposableOnDestroyList = HashMap<String, Disposable>()
     private val disposableOnStopList = HashMap<String, Disposable>()

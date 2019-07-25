@@ -1,8 +1,8 @@
 package com.alexdeww.reactiveviewmodel.core.livedata
 
-import android.arch.lifecycle.LiveData
+import com.alexdeww.reactiveviewmodel.level.ApiLiveData
 
-abstract class RvmLiveData<T> : LiveData<T>() {
+abstract class RvmLiveData<T> : ApiLiveData<T>() {
 
     val hasValue: Boolean get() = value != null
 

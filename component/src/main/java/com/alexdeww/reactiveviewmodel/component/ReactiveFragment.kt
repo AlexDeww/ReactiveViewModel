@@ -6,9 +6,10 @@ import android.arch.lifecycle.LifecycleRegistry
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.View
+import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import io.reactivex.disposables.Disposable
 
-abstract class ReactiveFragment : Fragment(), RvmAndroidComponent {
+abstract class ReactiveFragment : Fragment(), RvmViewComponent {
 
     private var _viewLifecycleOwner: InternalLifecycleOwner? = null
     private val disposableOnDestroyList = HashMap<String, Disposable>()
