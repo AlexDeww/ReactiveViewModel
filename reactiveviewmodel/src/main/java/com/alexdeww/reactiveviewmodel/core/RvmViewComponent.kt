@@ -1,0 +1,29 @@
+package com.alexdeww.reactiveviewmodel.core
+
+import android.arch.lifecycle.LifecycleOwner
+import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.Observer
+import com.alexdeww.reactiveviewmodel.core.property.Event
+import com.alexdeww.reactiveviewmodel.core.property.State
+import io.reactivex.disposables.Disposable
+
+interface RvmViewComponent {
+
+    val componentLifecycleOwner: LifecycleOwner
+
+    fun Disposable.disposeOnDestroy(tag: String)
+
+    fun Disposable.disposeOnStop(tag: String)
+
+    fun Disposable.disposeOnDestroyView(tag: String)
+
+    fun <T> LiveData<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
+        observe(componentLifecycleOwner, action)
+
+    fun <T> State<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
+        observe(componentLifecycleOwner, action)
+
+    fun <T> Event<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
+        observe(componentLifecycleOwner, action)
+
+}
