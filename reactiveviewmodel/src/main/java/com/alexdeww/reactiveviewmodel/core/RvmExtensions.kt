@@ -1,9 +1,9 @@
 package com.alexdeww.reactiveviewmodel.core
 
-import android.arch.lifecycle.LifecycleOwner
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.Observer
 import android.view.View
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.property.Action
 import com.alexdeww.reactiveviewmodel.core.property.Event
 import com.alexdeww.reactiveviewmodel.core.property.State

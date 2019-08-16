@@ -1,6 +1,6 @@
 package com.alexdeww.reactiveviewmodel.core.livedata
 
-import android.arch.lifecycle.LiveData
+import androidx.lifecycle.LiveData
 
 abstract class RvmLiveData<T> : LiveData<T>() {
 

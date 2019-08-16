@@ -1,7 +1,7 @@
 package com.alexdeww.reactiveviewmodel.component
 
-import android.arch.lifecycle.LifecycleOwner
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import io.reactivex.disposables.Disposable
 

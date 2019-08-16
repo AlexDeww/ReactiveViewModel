@@ -1,6 +1,6 @@
 package com.alexdeww.reactiveviewmodel.core
 
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.ViewModel
 import com.alexdeww.reactiveviewmodel.core.common.RvmComponent
 import com.alexdeww.reactiveviewmodel.core.property.Action
 import com.alexdeww.reactiveviewmodel.core.property.Event

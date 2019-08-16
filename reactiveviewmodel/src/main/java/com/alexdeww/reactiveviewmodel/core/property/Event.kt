@@ -1,6 +1,6 @@
 package com.alexdeww.reactiveviewmodel.core.property
 
-import android.arch.lifecycle.LiveData
+import androidx.lifecycle.LiveData
 import com.alexdeww.reactiveviewmodel.core.livedata.LiveEvent
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable

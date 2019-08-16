@@ -1,7 +1,7 @@
 package com.alexdeww.reactiveviewmodel.component
 
-import android.arch.lifecycle.LifecycleOwner
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.LifecycleOwner
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import io.reactivex.disposables.Disposable
 

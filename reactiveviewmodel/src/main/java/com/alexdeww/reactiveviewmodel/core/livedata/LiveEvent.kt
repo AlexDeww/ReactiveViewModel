@@ -1,10 +1,10 @@
 package com.alexdeww.reactiveviewmodel.core.livedata
 
-import android.arch.lifecycle.LifecycleOwner
-import android.arch.lifecycle.MediatorLiveData
-import android.arch.lifecycle.Observer
-import android.support.annotation.MainThread
-import android.support.v4.util.ArraySet
+import androidx.annotation.MainThread
+import androidx.collection.ArraySet
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.Observer
 
 /**
  * https://github.com/hadilq/LiveEvent/blob/master/lib/src/main/java/com/hadilq/liveevent/LiveEvent.kt
@@ -15,15 +15,15 @@ open class LiveEvent<T> : MediatorLiveData<T>() {
     private val observers = ArraySet<ObserverWrapper<T>>()
 
     @MainThread
-    override fun observe(owner: LifecycleOwner, observer: Observer<T>) {
+    override fun observe(owner: LifecycleOwner, observer: Observer<in T>) {
         val wrapper = ObserverWrapper(observer)
         observers.add(wrapper)
         super.observe(owner, wrapper)
     }
 
     @MainThread
-    override fun removeObserver(observer: Observer<T>) {
-        if (observers.remove(observer)) {
+    override fun removeObserver(observer: Observer<in T>) {
+        if (observers.remove(observer as Observer<*>)) {
             super.removeObserver(observer)
             return
         }

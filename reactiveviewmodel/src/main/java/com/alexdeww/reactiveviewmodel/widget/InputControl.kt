@@ -1,9 +1,9 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.annotation.SuppressLint
-import android.support.design.widget.TextInputLayout
 import android.text.*
 import android.widget.EditText
+import com.google.android.material.textfield.TextInputLayout
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
