@@ -110,9 +110,22 @@ class EnterSmsCodeFragment : ReactiveFragment() {
 ```kotlin
 val isProgress = state<Boolean>(false)
 ```
-Изменения значения
+Изменение значения
 ```kotlin
 isProgress.consumer.accept(true)
 isProgress.setValue(true) // расширение для isProgress.consumer.accept(true)
 isProgress.setValueIfChanged(true) // расширение для isProgress.consumer.accept(true) но с проверкой if (lastValue != newValue)
+```
+
+### Action
+**Action** ипользуется для передачи событий или параметров из View в ViewModel
+
+Создание
+```kotlin
+val actionSendSmsCodeAgain = event<Unit>() // or emptyAction() если тип Unit
+```
+Использование 
+```kotlin
+actionSendSmsCodeAgain.bindOnClick(btnSendSmsCode)
+btnSendSmsCode.setOnClickListener { actionSendSmsCodeAgain.call() }
 ```
