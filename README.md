@@ -116,16 +116,39 @@ isProgress.consumer.accept(true)
 isProgress.setValue(true) // расширение для isProgress.consumer.accept(true)
 isProgress.setValueIfChanged(true) // расширение для isProgress.consumer.accept(true) но с проверкой if (lastValue != newValue)
 ```
+```kotlin
+isProgress.observe { value -> }
+```
 
 ### Action
 **Action** ипользуется для передачи событий или параметров из View в ViewModel
 
 Создание
 ```kotlin
-val actionSendSmsCodeAgain = event<Unit>() // or emptyAction() если тип Unit
+val actionSendSmsCodeAgain = action<Unit>() // or emptyAction() если тип Unit
 ```
 Использование 
 ```kotlin
+actionSendSmsCodeAgain.consumer.accept(Unit)
+actionSendSmsCodeAgain.call() // расширение для actionSendSmsCodeAgain.consumer.accept(Unit)
+```
+```kotlin
 actionSendSmsCodeAgain.bindOnClick(btnSendSmsCode)
 btnSendSmsCode.setOnClickListener { actionSendSmsCodeAgain.call() }
+```
+
+### Event
+**Event** ипользуется для передачи событий или параметров из ViewModel в View. Хранит последнее переданное значение, пока не появится подписчик.
+
+Создание
+```kotlin
+val eventDone = event<Unit>() // or emptyEvent() если тип Unit
+```
+Использование 
+```kotlin
+eventDone.consumer.accept(Unit)
+eventDone.call() // расширение для eventDone.consumer.accept(Unit)
+```
+```kotlin
+eventDone.observe { value -> }
 ```
