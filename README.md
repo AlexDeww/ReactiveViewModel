@@ -21,6 +21,7 @@ dependencies {
         implementation "com.github.AlexDeww:ReactiveViewModel:$last_version"
 }
 ```
+
 ### Пример ViewModel
 ```kotlin
 class EnterSmsCodeViewModel(
@@ -57,13 +58,46 @@ class EnterSmsCodeViewModel(
 	    .observable
             .filter { isProgress.value == false }
             .switchMap {
-                requestSmsCode.asSingle(fullPhoneNumber)
+                requestSmsCode
+		    .asSingle(fullPhoneNumber)
                     .bindProgress(isProgress.consumer)
 		    .doOnError(eventError.consumer)
             }
             .retry()
             .subscribe(eventShowSmsCode.consumer)
             .disposeOnCleared()
+    }
+}
+```
+
+### Связь с View
+```kotlin
+class EnterSmsCodeFragment : ReactiveFragment() {
+
+    companion object {
+        private const val ARG_FULL_PHONE_NUMBER = "EnterSmsCodeFragment.ARG_FULL_PHONE_NUMBER"
+	
+        fun create(fullPhoneNumber: String): EnterSmsCodeFragment = EnterSmsCodeFragment()
+            .args { putString(ARG_FULL_PHONE_NUMBER, fullPhoneNumber) }
+    }
+    
+    private val viewModel by viewModel<EnterSmsCodeViewModel> { 
+        parametersOf(arguments?.getString(ARG_FULL_PHONE_NUMBER)!!)
+    }
+    
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+	viewModel.isProgress.observe { if (it) showProgress() else hideProgress() }
+	
+	viewModel.eventError.observe { showError(it) }
+	viewModel.eventDone.observe { router.newRootScreen(Screens.Main.TripSetupFlowScreen()) }
+	
+	viewModel.inputSmsCode
+            .bindTo(etSmsCode)
+            .disposeOnDestroyView("inputSmsCode")
+	    
+	viewModel.actionSendSmsCodeAgain.bindOnClick(btnSendSmsAgain)
     }
 }
 ```
