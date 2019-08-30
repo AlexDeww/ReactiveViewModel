@@ -110,12 +110,13 @@ class EnterSmsCodeFragment : ReactiveFragment() {
 ```kotlin
 val isProgress = state<Boolean>(false)
 ```
-Изменение значения
+Из ViewModel
 ```kotlin
 isProgress.consumer.accept(true)
 isProgress.setValue(true) // расширение для isProgress.consumer.accept(true)
 isProgress.setValueIfChanged(true) // расширение для isProgress.consumer.accept(true) но с проверкой if (lastValue != newValue)
 ```
+В View
 ```kotlin
 isProgress.observe { value -> }
 ```
@@ -127,11 +128,12 @@ isProgress.observe { value -> }
 ```kotlin
 val actionSendSmsCodeAgain = action<Unit>() // or emptyAction() если тип Unit
 ```
-Использование 
+Из ViewModel 
 ```kotlin
 actionSendSmsCodeAgain.consumer.accept(Unit)
 actionSendSmsCodeAgain.call() // расширение для actionSendSmsCodeAgain.consumer.accept(Unit)
 ```
+В View
 ```kotlin
 actionSendSmsCodeAgain.bindOnClick(btnSendSmsCode)
 btnSendSmsCode.setOnClickListener { actionSendSmsCodeAgain.call() }
@@ -144,11 +146,16 @@ btnSendSmsCode.setOnClickListener { actionSendSmsCodeAgain.call() }
 ```kotlin
 val eventDone = event<Unit>() // or emptyEvent() если тип Unit
 ```
-Использование 
+Из ViewModel 
 ```kotlin
 eventDone.consumer.accept(Unit)
 eventDone.call() // расширение для eventDone.consumer.accept(Unit)
 ```
+В View
 ```kotlin
 eventDone.observe { value -> }
 ```
+
+
+## Инфо
+Вся либа, надстройка над LiveData. Cвойства(state, event) имею поле **liveData** для возможности совместного использования с **DataBinding**
