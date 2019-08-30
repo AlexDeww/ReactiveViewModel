@@ -21,3 +21,49 @@ dependencies {
         implementation "com.github.AlexDeww:ReactiveViewModel:$last_version"
 }
 ```
+### Пример ViewModel
+```kotlin
+class EnterSmsCodeViewModel(
+    val fullPhoneNumber: String,
+    private val requestSmsCode: RequestSmsCode,
+    private val registerOrSignIn: RegisterOrSignIn
+): ReactiveViewModel() {
+    val isProgress = state(false)
+    
+    val inputSmsCode = inputControl()
+    
+    val actionSendSmsCodeAgain = emptyAction()
+    
+    val eventError = event<Throwable>()
+    val eventDone = emptyEvent()
+    val eventShowSmsCode = event<String>()
+    
+    init {
+        inputSmsCode.text
+	    .observable
+	    .debounce(250, TimeUnit.MILLISECONDS)
+	    .filter { it.length == SMS_CODE_LENGTH }
+	    .switchMapSingle {
+                registerOrSignIn
+                    .asSingle(RegisterOrSignIn.Params(fullPhoneNumber, it))
+                    .bindProgress(isProgress.consumer)
+                    .doOnError(eventError.consumer)
+            }
+	    .retry()
+	    .subscribe { eventDone.call() }
+	    .disposeOnCleared()
+	    
+	actionSendSmsCodeAgain
+	    .observable
+            .filter { isProgress.value == false }
+            .switchMap {
+                requestSmsCode.asSingle(fullPhoneNumber)
+                    .bindProgress(isProgress.consumer)
+		    .doOnError(eventError.consumer)
+            }
+            .retry()
+            .subscribe(eventShowSmsCode.consumer)
+            .disposeOnCleared()
+    }
+}
+```
