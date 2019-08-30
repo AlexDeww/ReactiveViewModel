@@ -105,6 +105,7 @@ class EnterSmsCodeFragment : ReactiveFragment() {
 
 ### State
 **State** хранит послдение значение и излучает его при подписке.
+
 Создание
 ```kotlin
 val isProgress = state<Boolean>(false)
