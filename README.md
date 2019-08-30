@@ -99,5 +99,19 @@ class EnterSmsCodeFragment : ReactiveFragment() {
 	    
 	viewModel.actionSendSmsCodeAgain.bindOnClick(btnSendSmsAgain)
     }
+    
 }
+```
+
+### State
+**State** хранит послдение значение и излучает его при подписке.
+Создание
+```kotlin
+val isProgress = state<Boolean>(false)
+```
+Изменения значения
+```kotlin
+isProgress.consumer.accept(true)
+isProgress.setValue(true) // расширение для isProgress.consumer.accept(true)
+isProgress.setValueIfChanged(true) // расширение для isProgress.consumer.accept(true) но с проверкой if (lastValue != newValue)
 ```
