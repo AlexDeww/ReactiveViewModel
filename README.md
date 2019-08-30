@@ -81,7 +81,7 @@ class EnterSmsCodeFragment : ReactiveFragment() {
             .args { putString(ARG_FULL_PHONE_NUMBER, fullPhoneNumber) }
     }
     
-    private val viewModel by viewModel<EnterSmsCodeViewModel> { 
+    private val viewModel by viewModel<EnterSmsCodeViewModel> {  // koin!!!
         parametersOf(arguments?.getString(ARG_FULL_PHONE_NUMBER)!!)
     }
     
