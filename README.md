@@ -1,7 +1,7 @@
 # ReactiveViewModel
 
-It's a fork https://github.com/dmdevgo/RxPM
-
+This is Android reactive MVVM library, fork https://github.com/dmdevgo/RxPM
+   
 The Status of the lib: 
 [![](https://jitpack.io/v/AlexDeww/ReactiveViewModel.svg)](https://jitpack.io/#AlexDeww/ReactiveViewModel)
 
