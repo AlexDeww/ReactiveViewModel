@@ -14,8 +14,8 @@ typealias FormatterAction = (text: String) -> String
 @SuppressLint("CheckResult")
 class InputControl internal constructor(
     initialText: String,
-    formatter: FormatterAction?,
-    hideErrorOnUserInput: Boolean
+    hideErrorOnUserInput: Boolean,
+    formatter: FormatterAction?
 ) : BaseControl() {
 
     val text = state(initialText)
@@ -38,9 +38,9 @@ class InputControl internal constructor(
 
 fun inputControl(
     initialText: String = "",
-    formatter: FormatterAction? = null,
-    hideErrorOnUserInput: Boolean = true
-): InputControl = InputControl(initialText, formatter, hideErrorOnUserInput)
+    hideErrorOnUserInput: Boolean = true,
+    formatter: FormatterAction? = null
+): InputControl = InputControl(initialText, hideErrorOnUserInput, formatter)
 
 
 private val EditText.textChanges: Observable<CharSequence>
