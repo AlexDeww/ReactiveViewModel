@@ -33,14 +33,14 @@ class EnterSmsCodeViewModel(
     
     val inputSmsCode = inputControl()
     
-    val actionSendSmsCodeAgain = emptyAction()
+    val actionSendSmsCodeAgain = actionEmpty()
     
     val eventError = event<Throwable>()
-    val eventDone = emptyEvent()
+    val eventDone = eventEmpty()
     val eventShowSmsCode = event<String>()
     
     init {
-        inputSmsCode.text
+        inputSmsCode.value
 	    .observable
 	    .debounce(250, TimeUnit.MILLISECONDS)
 	    .filter { it.length == SMS_CODE_LENGTH }
@@ -126,7 +126,7 @@ isProgress.observe { value -> }
 
 Создание
 ```kotlin
-val actionSendSmsCodeAgain = action<Unit>() // or emptyAction() если тип Unit
+val actionSendSmsCodeAgain = action<Unit>() // or actionEmpty() если тип Unit
 ```
 Из ViewModel 
 ```kotlin
@@ -144,7 +144,7 @@ btnSendSmsCode.setOnClickListener { actionSendSmsCodeAgain.call() }
 
 Создание
 ```kotlin
-val eventDone = event<Unit>() // or emptyEvent() если тип Unit
+val eventDone = event<Unit>() // or eventEmpty() если тип Unit
 ```
 Из ViewModel 
 ```kotlin
