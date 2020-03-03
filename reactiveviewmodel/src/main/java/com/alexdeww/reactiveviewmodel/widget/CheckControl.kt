@@ -1,6 +1,7 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.annotation.SuppressLint
+import android.view.View
 import android.widget.CompoundButton
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
@@ -10,36 +11,25 @@ import io.reactivex.rxjava3.disposables.Disposable
 @SuppressLint("CheckResult")
 class CheckControl internal constructor(
     initialChecked: Boolean
-) : BaseControl() {
-
-    val checked = state(initialChecked)
-
-    val actionChange = action<Boolean>()
-
-    init {
-        actionChange
-            .observable
-            .filter { it != checked.value }
-            .subscribe(checked.consumer)
-    }
-
-}
+) : BaseVisualControl<Boolean>(initialChecked)
 
 fun checkControl(initialChecked: Boolean = false): CheckControl = CheckControl(initialChecked)
 
-
 private val CompoundButton.checkedChanges: Observable<Boolean>
-    get() = Observable
-        .create { emitter ->
-            setOnCheckedChangeListener { _, isChecked -> emitter.onNext(isChecked) }
-            emitter.setCancellable { setOnCheckedChangeListener(null) }
-        }
+    get() = Observable.create { emitter ->
+        setOnCheckedChangeListener { _, isChecked -> emitter.onNext(isChecked) }
+        emitter.setCancellable { setOnCheckedChangeListener(null) }
+    }
 
-fun CheckControl.bindTo(compoundButton: CompoundButton): Disposable {
+fun CheckControl.bindTo(
+    compoundButton: CompoundButton,
+    invisibleState: Int = View.GONE
+): Disposable {
     var editing = false
     return CompositeDisposable().apply {
+        add(commonBindTo(compoundButton, invisibleState))
         add(
-            checked
+            value
                 .observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
@@ -53,7 +43,7 @@ fun CheckControl.bindTo(compoundButton: CompoundButton): Disposable {
             compoundButton
                 .checkedChanges
                 .filter { !editing }
-                .subscribe(actionChange.consumer)
+                .subscribe(actionChangeValue.consumer)
         )
     }
 }

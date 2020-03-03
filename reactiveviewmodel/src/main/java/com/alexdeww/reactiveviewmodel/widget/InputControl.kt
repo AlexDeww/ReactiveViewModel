@@ -2,6 +2,7 @@ package com.alexdeww.reactiveviewmodel.widget
 
 import android.annotation.SuppressLint
 import android.text.*
+import android.view.View
 import android.widget.EditText
 import com.google.android.material.textfield.TextInputLayout
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -14,24 +15,20 @@ typealias FormatterAction = (text: String) -> String
 @SuppressLint("CheckResult")
 class InputControl internal constructor(
     initialText: String,
-    hideErrorOnUserInput: Boolean,
-    formatter: FormatterAction?
-) : BaseControl() {
+    private val hideErrorOnUserInput: Boolean,
+    private val formatter: FormatterAction?
+) : BaseVisualControl<String>(initialText) {
 
-    val text = state(initialText)
     val error = state<String>()
 
-    val actionChangeText = action<String>()
+    override fun transformObservable(
+        observable: Observable<String>
+    ): Observable<String> = observable
+        .map { s -> formatter?.let { it(s) } ?: s }
 
-    init {
-        actionChangeText
-            .observable
-            .filter { it != text.value }
-            .map { s -> formatter?.let { it(s) } ?: s }
-            .subscribe {
-                text.consumer.accept(it)
-                if (hideErrorOnUserInput) error.consumer.accept("")
-            }
+    override fun onChangedValue(newValue: String) {
+        super.onChangedValue(newValue)
+        if (hideErrorOnUserInput) error.consumer.accept("")
     }
 
 }
@@ -51,7 +48,12 @@ private val EditText.textChanges: Observable<CharSequence>
                     /* nothing */
                 }
 
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
                     /* nothing */
                 }
 
@@ -65,12 +67,14 @@ private val EditText.textChanges: Observable<CharSequence>
 
 fun InputControl.bindTo(
     editText: EditText,
-    useError: Boolean = false
+    useError: Boolean = false,
+    invisibleState: Int = View.GONE
 ): Disposable {
     var editing = false
     return CompositeDisposable().apply {
+        add(commonBindTo(editText, invisibleState))
         add(
-            text
+            value
                 .observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
@@ -103,16 +107,17 @@ fun InputControl.bindTo(
                 .textChanges
                 .filter { !editing }
                 .map { it.toString() }
-                .subscribe(actionChangeText.consumer)
+                .subscribe(actionChangeValue.consumer)
         )
     }
 }
 
 fun InputControl.bindTo(
     textInputLayout: TextInputLayout,
-    useError: Boolean = false
+    useError: Boolean = false,
+    invisibleState: Int = View.GONE
 ): Disposable = CompositeDisposable().apply {
-    add(bindTo(textInputLayout.editText!!, false))
+    add(bindTo(textInputLayout.editText!!, false, invisibleState))
     if (useError) {
         add(
             error

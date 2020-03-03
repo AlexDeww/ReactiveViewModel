@@ -20,8 +20,7 @@ class DialogControl<T, R> internal constructor() : BaseControl() {
     private val result = action<R>()
 
     val displayed = state<Display>(Display.Absent)
-    val isShowing
-        get() = displayed.value is Display.Displayed<*>
+    val isShowing get() = displayed.value is Display.Displayed<*>
 
     fun show(data: T) {
         dismiss()

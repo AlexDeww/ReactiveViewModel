@@ -1,6 +1,7 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.annotation.SuppressLint
+import android.view.View
 import android.widget.RatingBar
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
@@ -10,20 +11,7 @@ import io.reactivex.rxjava3.disposables.Disposable
 @SuppressLint("CheckResult")
 class RatingControl internal constructor(
     initialValue: Float
-) : BaseControl() {
-
-    val rating = state(initialValue)
-
-    val actionChange = action<Float>()
-
-    init {
-        actionChange
-            .observable
-            .filter { it != rating.value }
-            .subscribe { rating.consumer.accept(it) }
-    }
-
-}
+) : BaseVisualControl<Float>(initialValue)
 
 fun ratingControl(initialValue: Float = 0f): RatingControl = RatingControl(initialValue)
 
@@ -34,11 +22,15 @@ private val RatingBar.ratingBarChange: Observable<Float>
             emitter.setCancellable { onRatingBarChangeListener = null }
         }
 
-fun RatingControl.bindTo(ratingBar: RatingBar): Disposable {
+fun RatingControl.bindTo(
+    ratingBar: RatingBar,
+    invisibleState: Int = View.GONE
+): Disposable {
     var editing = false
     return CompositeDisposable().apply {
+        add(commonBindTo(ratingBar, invisibleState))
         add(
-            rating
+            value
                 .observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
@@ -52,7 +44,7 @@ fun RatingControl.bindTo(ratingBar: RatingBar): Disposable {
             ratingBar
                 .ratingBarChange
                 .filter { !editing }
-                .subscribe(actionChange.consumer)
+                .subscribe(actionChangeValue.consumer)
         )
     }
 }
