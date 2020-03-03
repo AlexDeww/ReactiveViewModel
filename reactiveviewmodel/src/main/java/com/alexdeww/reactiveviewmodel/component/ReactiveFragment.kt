@@ -3,7 +3,7 @@ package com.alexdeww.reactiveviewmodel.component
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxjava3.disposables.Disposable
 
 abstract class ReactiveFragment : Fragment(), RvmViewComponent {
 

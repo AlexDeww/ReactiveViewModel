@@ -2,10 +2,10 @@ package com.alexdeww.reactiveviewmodel.core.property
 
 import androidx.lifecycle.LiveData
 import com.alexdeww.reactiveviewmodel.core.livedata.LiveEvent
-import io.reactivex.Observable
-import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Consumer
-import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.functions.Consumer
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 import java.util.concurrent.atomic.AtomicBoolean
 
 class Event<T> internal constructor() {

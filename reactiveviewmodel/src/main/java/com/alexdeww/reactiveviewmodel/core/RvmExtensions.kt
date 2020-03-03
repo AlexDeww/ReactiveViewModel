@@ -7,10 +7,10 @@ import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.property.Action
 import com.alexdeww.reactiveviewmodel.core.property.Event
 import com.alexdeww.reactiveviewmodel.core.property.State
-import io.reactivex.*
-import io.reactivex.functions.BiFunction
-import io.reactivex.functions.Consumer
-import io.reactivex.functions.Function
+import io.reactivex.rxjava3.core.*
+import io.reactivex.rxjava3.functions.BiFunction
+import io.reactivex.rxjava3.functions.Consumer
+import io.reactivex.rxjava3.functions.Function
 
 typealias OnLiveDataAction<T> = (data: T) -> Unit
 

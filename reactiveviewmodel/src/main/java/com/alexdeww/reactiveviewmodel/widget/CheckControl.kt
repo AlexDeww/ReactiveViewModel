@@ -2,10 +2,10 @@ package com.alexdeww.reactiveviewmodel.widget
 
 import android.annotation.SuppressLint
 import android.widget.CompoundButton
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
 
 @SuppressLint("CheckResult")
 class CheckControl internal constructor(

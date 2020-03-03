@@ -1,9 +1,9 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.app.Dialog
-import io.reactivex.Maybe
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Maybe
+import io.reactivex.rxjava3.disposables.Disposable
 
 sealed class DialogResult {
     object Accept : DialogResult()

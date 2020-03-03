@@ -2,9 +2,9 @@ package com.alexdeww.reactiveviewmodel.core.property
 
 import android.annotation.SuppressLint
 import com.alexdeww.reactiveviewmodel.core.livedata.RvmLiveData
-import io.reactivex.Observable
-import io.reactivex.functions.Consumer
-import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.functions.Consumer
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 class State<T> internal constructor(initValue: T? = null) {
 

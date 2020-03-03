@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.property.Event
 import com.alexdeww.reactiveviewmodel.core.property.State
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxjava3.disposables.Disposable
 
 interface RvmViewComponent {
 

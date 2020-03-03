@@ -5,8 +5,8 @@ import com.alexdeww.reactiveviewmodel.core.common.RvmComponent
 import com.alexdeww.reactiveviewmodel.core.property.Action
 import com.alexdeww.reactiveviewmodel.core.property.Event
 import com.alexdeww.reactiveviewmodel.core.property.State
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
 
 /**
  * Based on RxPM
