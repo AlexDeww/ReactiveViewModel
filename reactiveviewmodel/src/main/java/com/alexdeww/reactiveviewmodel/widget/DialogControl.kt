@@ -18,7 +18,7 @@ class DialogControl<T, R> internal constructor() : BaseControl() {
         object Absent : Display()
     }
 
-    private val result = action<R>()
+    internal val result = action<R>()
 
     val displayed = state<Display>(Display.Absent)
     val isShowing get() = displayed.value is Display.Displayed<*>
@@ -42,17 +42,27 @@ class DialogControl<T, R> internal constructor() : BaseControl() {
             .firstElement()
     }
 
+    fun dismiss() {
+        if (isShowing) displayed.consumer.accept(Display.Absent)
+    }
+
+}
+
+class DialogControlResult<T, R> internal constructor(
+    private val dialogControl: DialogControl<T, R>
+) {
+
     fun sendResult(result: R) {
-        this.result.consumer.accept(result)
-        dismiss()
+        dialogControl.result.consumer.accept(result)
+        dialogControl.dismiss()
     }
 
     fun sendResultWithoutDismiss(result: R) {
-        this.result.consumer.accept(result)
+        dialogControl.result.consumer.accept(result)
     }
 
     fun dismiss() {
-        if (isShowing) displayed.consumer.accept(Display.Absent)
+        dialogControl.dismiss()
     }
 
 }
@@ -60,7 +70,7 @@ class DialogControl<T, R> internal constructor() : BaseControl() {
 fun <T, R> dialogControl(): DialogControl<T, R> = DialogControl()
 
 fun <T, R> DialogControl<T, R>.bindTo(
-    createDialog: (data: T, dc: DialogControl<T, R>) -> Dialog
+    createDialog: (data: T, dc: DialogControlResult<T, R>) -> Dialog
 ): Disposable {
     var dialog: Dialog? = null
     val closeDialog: () -> Unit = {
@@ -78,7 +88,7 @@ fun <T, R> DialogControl<T, R>.bindTo(
             when {
                 it is DialogControl.Display.Displayed<*> -> {
                     @Suppress("UNCHECKED_CAST")
-                    dialog = createDialog(it.data as T, this)
+                    dialog = createDialog(it.data as T, DialogControlResult(this))
                     dialog?.setOnDismissListener { this.dismiss() }
                     dialog?.show()
                 }
