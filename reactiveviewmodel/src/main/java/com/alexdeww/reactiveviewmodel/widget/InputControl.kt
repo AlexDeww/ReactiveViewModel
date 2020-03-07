@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.EditText
 import com.google.android.material.textfield.TextInputLayout
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -76,6 +77,7 @@ fun InputControl.bindTo(
         add(
             value
                 .observable
+                .toFlowable(BackpressureStrategy.LATEST)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     val editable = editText.text
@@ -97,6 +99,7 @@ fun InputControl.bindTo(
             add(
                 error
                     .observable
+                    .toFlowable(BackpressureStrategy.LATEST)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { s -> editText.error = s.takeIf { it.isNotEmpty() } }
             )
@@ -122,6 +125,7 @@ fun InputControl.bindTo(
         add(
             error
                 .observable
+                .toFlowable(BackpressureStrategy.LATEST)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { s -> textInputLayout.error = s.takeIf { it.isNotEmpty() } }
         )

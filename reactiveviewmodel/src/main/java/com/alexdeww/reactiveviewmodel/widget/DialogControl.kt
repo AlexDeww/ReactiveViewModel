@@ -2,6 +2,7 @@ package com.alexdeww.reactiveviewmodel.widget
 
 import android.app.Dialog
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.disposables.Disposable
 
@@ -70,6 +71,7 @@ fun <T, R> DialogControl<T, R>.bindTo(
 
     return displayed
         .observable
+        .toFlowable(BackpressureStrategy.LATEST)
         .observeOn(AndroidSchedulers.mainThread())
         .doFinally { closeDialog() }
         .subscribe {
