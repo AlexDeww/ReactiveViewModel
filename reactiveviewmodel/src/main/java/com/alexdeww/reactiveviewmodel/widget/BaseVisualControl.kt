@@ -3,6 +3,7 @@ package com.alexdeww.reactiveviewmodel.widget
 import android.view.View
 import androidx.annotation.CallSuper
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -41,6 +42,7 @@ internal fun <T> BaseVisualControl<T>.commonBindTo(
     add(
         isEnabled
             .observable
+            .toFlowable(BackpressureStrategy.LATEST)
             .observeOn(AndroidSchedulers.mainThread())
             .filter { it != view.isEnabled }
             .subscribe { view.isEnabled = it }
@@ -49,6 +51,7 @@ internal fun <T> BaseVisualControl<T>.commonBindTo(
     add(
         isVisible
             .observable
+            .toFlowable(BackpressureStrategy.LATEST)
             .observeOn(AndroidSchedulers.mainThread())
             .filter { it != (view.visibility == View.VISIBLE) }
             .subscribe { view.visibility = if (it) View.VISIBLE else invisibleState }
