@@ -16,12 +16,6 @@ class CheckControl internal constructor(
 
 fun checkControl(initialChecked: Boolean = false): CheckControl = CheckControl(initialChecked)
 
-private val CompoundButton.checkedChanges: Observable<Boolean>
-    get() = Observable.create { emitter ->
-        setOnCheckedChangeListener { _, isChecked -> emitter.onNext(isChecked) }
-        emitter.setCancellable { setOnCheckedChangeListener(null) }
-    }
-
 fun CheckControl.bindTo(
     compoundButton: CompoundButton,
     invisibleState: Int = View.GONE
@@ -40,7 +34,6 @@ fun CheckControl.bindTo(
                     editing = false
                 }
         )
-
         add(
             compoundButton
                 .checkedChanges
@@ -49,3 +42,9 @@ fun CheckControl.bindTo(
         )
     }
 }
+
+private val CompoundButton.checkedChanges: Observable<Boolean>
+    get() = Observable.create { emitter ->
+        setOnCheckedChangeListener { _, isChecked -> emitter.onNext(isChecked) }
+        emitter.setCancellable { setOnCheckedChangeListener(null) }
+    }
