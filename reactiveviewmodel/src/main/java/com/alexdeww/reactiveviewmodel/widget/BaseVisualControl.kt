@@ -2,11 +2,15 @@ package com.alexdeww.reactiveviewmodel.widget
 
 import android.view.View
 import androidx.annotation.CallSuper
+import com.alexdeww.reactiveviewmodel.core.property.State
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.BackpressureStrategy
+import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
+
+typealias OnVisibleChangeAction = (isVisible: Boolean) -> Unit
 
 abstract class BaseVisualControl<T>(
     initialValue: T
@@ -18,6 +22,43 @@ abstract class BaseVisualControl<T>(
 
     val actionChangeValue = action<T>()
 
+    init {
+        actionChangeValue
+            .observable
+            .filter { it != value.value }
+            .let { transformObservable(it) }
+            .filter { it != value.value }
+            .subscribe(::onChangedValue)
+    }
+
+    fun <T> State<T>.toViewFlowable(): Flowable<T> = this
+        .observable
+        .toFlowable(BackpressureStrategy.LATEST)
+        .observeOn(AndroidSchedulers.mainThread())
+
+    fun defaultBindTo(
+        view: View,
+        invisibleState: Int = View.GONE,
+        onVisibleChange: OnVisibleChangeAction? = null
+    ): Disposable = CompositeDisposable().apply {
+        add(
+            isEnabled
+                .toViewFlowable()
+                .subscribe { view.isEnabled = it }
+        )
+
+        add(
+            isVisible
+                .toViewFlowable()
+                .subscribe {
+                    when {
+                        onVisibleChange != null -> onVisibleChange.invoke(it)
+                        else -> view.visibility = if (it) View.VISIBLE else invisibleState
+                    }
+                }
+        )
+    }
+
     protected open fun transformObservable(observable: Observable<T>): Observable<T> = observable
 
     @CallSuper
@@ -25,35 +66,4 @@ abstract class BaseVisualControl<T>(
         value.consumer.accept(newValue)
     }
 
-    init {
-        actionChangeValue
-            .observable
-            .filter { it != value.value }
-            .let { transformObservable(it) }
-            .subscribe(::onChangedValue)
-    }
-
-}
-
-internal fun <T> BaseVisualControl<T>.commonBindTo(
-    view: View,
-    invisibleState: Int
-): Disposable = CompositeDisposable().apply {
-    add(
-        isEnabled
-            .observable
-            .toFlowable(BackpressureStrategy.LATEST)
-            .observeOn(AndroidSchedulers.mainThread())
-            .filter { it != view.isEnabled }
-            .subscribe { view.isEnabled = it }
-    )
-
-    add(
-        isVisible
-            .observable
-            .toFlowable(BackpressureStrategy.LATEST)
-            .observeOn(AndroidSchedulers.mainThread())
-            .filter { it != (view.visibility == View.VISIBLE) }
-            .subscribe { view.visibility = if (it) View.VISIBLE else invisibleState }
-    )
 }

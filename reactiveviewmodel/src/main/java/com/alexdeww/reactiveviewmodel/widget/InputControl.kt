@@ -40,45 +40,18 @@ fun inputControl(
     formatter: FormatterAction? = null
 ): InputControl = InputControl(initialText, hideErrorOnUserInput, formatter)
 
-
-private val EditText.textChanges: Observable<CharSequence>
-    get() = Observable
-        .create { emitter ->
-            val listener = object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    /* nothing */
-                }
-
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int
-                ) {
-                    /* nothing */
-                }
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    if (s != null) emitter.onNext(s)
-                }
-            }
-            addTextChangedListener(listener)
-            emitter.setCancellable { removeTextChangedListener(listener) }
-        }
-
 fun InputControl.bindTo(
     editText: EditText,
     useError: Boolean = false,
-    invisibleState: Int = View.GONE
+    invisibleState: Int = View.GONE,
+    onVisibleChange: OnVisibleChangeAction? = null
 ): Disposable {
     var editing = false
     return CompositeDisposable().apply {
-        add(commonBindTo(editText, invisibleState))
+        add(defaultBindTo(editText, invisibleState, onVisibleChange))
         add(
             value
-                .observable
-                .toFlowable(BackpressureStrategy.LATEST)
-                .observeOn(AndroidSchedulers.mainThread())
+                .toViewFlowable()
                 .subscribe {
                     val editable = editText.text
                     if (!it!!.contentEquals(editable)) {
@@ -98,9 +71,7 @@ fun InputControl.bindTo(
         if (useError) {
             add(
                 error
-                    .observable
-                    .toFlowable(BackpressureStrategy.LATEST)
-                    .observeOn(AndroidSchedulers.mainThread())
+                    .toViewFlowable()
                     .subscribe { s -> editText.error = s.takeIf { it.isNotEmpty() } }
             )
         }
@@ -118,9 +89,10 @@ fun InputControl.bindTo(
 fun InputControl.bindTo(
     textInputLayout: TextInputLayout,
     useError: Boolean = false,
-    invisibleState: Int = View.GONE
+    invisibleState: Int = View.GONE,
+    onVisibleChange: OnVisibleChangeAction? = null
 ): Disposable = CompositeDisposable().apply {
-    add(bindTo(textInputLayout.editText!!, false, invisibleState))
+    add(bindTo(textInputLayout.editText!!, false, invisibleState, onVisibleChange))
     if (useError) {
         add(
             error
@@ -131,3 +103,27 @@ fun InputControl.bindTo(
         )
     }
 }
+
+private val EditText.textChanges: Observable<CharSequence>
+    get() = Observable.create { emitter ->
+        val listener = object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                /* nothing */
+            }
+
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+                /* nothing */
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s != null) emitter.onNext(s)
+            }
+        }
+        addTextChangedListener(listener)
+        emitter.setCancellable { removeTextChangedListener(listener) }
+    }

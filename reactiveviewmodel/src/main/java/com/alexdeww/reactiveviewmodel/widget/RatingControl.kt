@@ -3,8 +3,6 @@ package com.alexdeww.reactiveviewmodel.widget
 import android.annotation.SuppressLint
 import android.view.View
 import android.widget.RatingBar
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -16,24 +14,17 @@ class RatingControl internal constructor(
 
 fun ratingControl(initialValue: Float = 0f): RatingControl = RatingControl(initialValue)
 
-private val RatingBar.ratingBarChange: Observable<Float>
-    get() = Observable.create { emitter ->
-        setOnRatingBarChangeListener { _, rating, _ -> emitter.onNext(rating) }
-        emitter.setCancellable { onRatingBarChangeListener = null }
-    }
-
 fun RatingControl.bindTo(
     ratingBar: RatingBar,
-    invisibleState: Int = View.GONE
+    invisibleState: Int = View.GONE,
+    onVisibleChange: OnVisibleChangeAction? = null
 ): Disposable {
     var editing = false
     return CompositeDisposable().apply {
-        add(commonBindTo(ratingBar, invisibleState))
+        add(defaultBindTo(ratingBar, invisibleState, onVisibleChange))
         add(
             value
-                .observable
-                .toFlowable(BackpressureStrategy.LATEST)
-                .observeOn(AndroidSchedulers.mainThread())
+                .toViewFlowable()
                 .subscribe {
                     editing = true
                     ratingBar.rating = it
@@ -49,3 +40,9 @@ fun RatingControl.bindTo(
         )
     }
 }
+
+private val RatingBar.ratingBarChange: Observable<Float>
+    get() = Observable.create { emitter ->
+        setOnRatingBarChangeListener { _, rating, _ -> emitter.onNext(rating) }
+        emitter.setCancellable { onRatingBarChangeListener = null }
+    }

@@ -3,8 +3,6 @@ package com.alexdeww.reactiveviewmodel.widget
 import android.annotation.SuppressLint
 import android.view.View
 import android.widget.CompoundButton
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -18,16 +16,15 @@ fun checkControl(initialChecked: Boolean = false): CheckControl = CheckControl(i
 
 fun CheckControl.bindTo(
     compoundButton: CompoundButton,
-    invisibleState: Int = View.GONE
+    invisibleState: Int = View.GONE,
+    onVisibleChange: OnVisibleChangeAction? = null
 ): Disposable {
     var editing = false
     return CompositeDisposable().apply {
-        add(commonBindTo(compoundButton, invisibleState))
+        add(defaultBindTo(compoundButton, invisibleState, onVisibleChange))
         add(
             value
-                .observable
-                .toFlowable(BackpressureStrategy.LATEST)
-                .observeOn(AndroidSchedulers.mainThread())
+                .toViewFlowable()
                 .subscribe {
                     editing = true
                     compoundButton.isChecked = it
