@@ -9,8 +9,8 @@ buildscript {
         rxjava_version = '3.0.5'
         rxandroid_version = '3.0.0'
         archx_version = '2.2.0'
-        appcompatx_version = '1.1.0'
-        material_version = '1.1.0'
+        appcompatx_version = '1.2.0'
+        material_version = '1.2.0'
     }
     repositories {
         google()
