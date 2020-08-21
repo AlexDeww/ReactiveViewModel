@@ -10,15 +10,21 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 
-typealias OnVisibleChangeAction = (isVisible: Boolean) -> Unit
-
 abstract class BaseVisualControl<T>(
-    initialValue: T
+    initialValue: T,
+    initialEnabled: Boolean,
+    initialVisibility: Visibility
 ) : BaseControl() {
 
+    enum class Visibility(val value: Int) {
+        VISIBLE(View.VISIBLE),
+        INVISIBLE(View.INVISIBLE),
+        GONE(View.GONE)
+    }
+
     val value = state(initialValue)
-    val isEnabled = state(true)
-    val isVisible = state(true)
+    val enabled = state(initialEnabled)
+    val visibility = state(initialVisibility)
 
     val actionChangeValue = action<T>()
 
@@ -38,25 +44,24 @@ abstract class BaseVisualControl<T>(
 
     fun defaultBindTo(
         view: View,
-        invisibleState: Int = View.GONE,
-        onVisibleChange: OnVisibleChangeAction? = null
+        bindEnable: Boolean,
+        bindVisible: Boolean
     ): Disposable = CompositeDisposable().apply {
-        add(
-            isEnabled
-                .toViewFlowable()
-                .subscribe { view.isEnabled = it }
-        )
+        if (bindEnable) {
+            add(
+                enabled
+                    .toViewFlowable()
+                    .subscribe { view.isEnabled = it }
+            )
+        }
 
-        add(
-            isVisible
-                .toViewFlowable()
-                .subscribe {
-                    when {
-                        onVisibleChange != null -> onVisibleChange.invoke(it)
-                        else -> view.visibility = if (it) View.VISIBLE else invisibleState
-                    }
-                }
-        )
+        if (bindVisible) {
+            add(
+                visibility
+                    .toViewFlowable()
+                    .subscribe { view.visibility = it.value }
+            )
+        }
     }
 
     protected open fun transformObservable(observable: Observable<T>): Observable<T> = observable

@@ -17,8 +17,10 @@ typealias FormatterAction = (text: String) -> String
 class InputControl internal constructor(
     initialText: String,
     private val hideErrorOnUserInput: Boolean,
-    private val formatter: FormatterAction?
-) : BaseVisualControl<String>(initialText) {
+    private val formatter: FormatterAction?,
+    initialEnabled: Boolean,
+    initialVisibility: Visibility
+) : BaseVisualControl<String>(initialText, initialEnabled, initialVisibility) {
 
     val error = state<String>()
 
@@ -37,18 +39,26 @@ class InputControl internal constructor(
 fun inputControl(
     initialText: String = "",
     hideErrorOnUserInput: Boolean = true,
-    formatter: FormatterAction? = null
-): InputControl = InputControl(initialText, hideErrorOnUserInput, formatter)
+    formatter: FormatterAction? = null,
+    initialEnabled: Boolean = true,
+    initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
+): InputControl = InputControl(
+    initialText = initialText,
+    hideErrorOnUserInput = hideErrorOnUserInput,
+    formatter = formatter,
+    initialEnabled = initialEnabled,
+    initialVisibility = initialVisibility
+)
 
 fun InputControl.bindTo(
     editText: EditText,
-    useError: Boolean = false,
-    invisibleState: Int = View.GONE,
-    onVisibleChange: OnVisibleChangeAction? = null
+    bindError: Boolean = false,
+    bindEnable: Boolean = true,
+    bindVisible: Boolean = true
 ): Disposable {
     var editing = false
     return CompositeDisposable().apply {
-        add(defaultBindTo(editText, invisibleState, onVisibleChange))
+        add(defaultBindTo(editText, bindEnable, bindVisible))
         add(
             value
                 .toViewFlowable()
@@ -68,7 +78,7 @@ fun InputControl.bindTo(
                 }
         )
 
-        if (useError) {
+        if (bindError) {
             add(
                 error
                     .toViewFlowable()
@@ -88,12 +98,12 @@ fun InputControl.bindTo(
 
 fun InputControl.bindTo(
     textInputLayout: TextInputLayout,
-    useError: Boolean = false,
-    invisibleState: Int = View.GONE,
-    onVisibleChange: OnVisibleChangeAction? = null
+    bindError: Boolean = false,
+    bindEnable: Boolean = true,
+    bindVisible: Boolean = true
 ): Disposable = CompositeDisposable().apply {
-    add(bindTo(textInputLayout.editText!!, false, invisibleState, onVisibleChange))
-    if (useError) {
+    add(bindTo(textInputLayout.editText!!, false, bindEnable, bindVisible))
+    if (bindError) {
         add(
             error
                 .observable

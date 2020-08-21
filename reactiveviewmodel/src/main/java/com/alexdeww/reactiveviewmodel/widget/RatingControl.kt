@@ -1,7 +1,6 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.annotation.SuppressLint
-import android.view.View
 import android.widget.RatingBar
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -9,19 +8,29 @@ import io.reactivex.rxjava3.disposables.Disposable
 
 @SuppressLint("CheckResult")
 class RatingControl internal constructor(
-    initialValue: Float
-) : BaseVisualControl<Float>(initialValue)
+    initialValue: Float,
+    initialEnabled: Boolean,
+    initialVisibility: Visibility
+) : BaseVisualControl<Float>(initialValue, initialEnabled, initialVisibility)
 
-fun ratingControl(initialValue: Float = 0f): RatingControl = RatingControl(initialValue)
+fun ratingControl(
+    initialValue: Float = 0f,
+    initialEnabled: Boolean = true,
+    initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
+): RatingControl = RatingControl(
+    initialValue = initialValue,
+    initialEnabled = initialEnabled,
+    initialVisibility = initialVisibility
+)
 
 fun RatingControl.bindTo(
     ratingBar: RatingBar,
-    invisibleState: Int = View.GONE,
-    onVisibleChange: OnVisibleChangeAction? = null
+    bindEnable: Boolean = true,
+    bindVisible: Boolean = true
 ): Disposable {
     var editing = false
     return CompositeDisposable().apply {
-        add(defaultBindTo(ratingBar, invisibleState, onVisibleChange))
+        add(defaultBindTo(ratingBar, bindEnable, bindVisible))
         add(
             value
                 .toViewFlowable()

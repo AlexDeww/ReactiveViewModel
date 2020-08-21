@@ -9,19 +9,29 @@ import io.reactivex.rxjava3.disposables.Disposable
 
 @SuppressLint("CheckResult")
 class CheckControl internal constructor(
-    initialChecked: Boolean
-) : BaseVisualControl<Boolean>(initialChecked)
+    initialChecked: Boolean,
+    initialEnabled: Boolean,
+    initialVisibility: Visibility
+) : BaseVisualControl<Boolean>(initialChecked, initialEnabled, initialVisibility)
 
-fun checkControl(initialChecked: Boolean = false): CheckControl = CheckControl(initialChecked)
+fun checkControl(
+    initialChecked: Boolean = false,
+    initialEnabled: Boolean = true,
+    initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
+): CheckControl = CheckControl(
+    initialChecked = initialChecked,
+    initialEnabled = initialEnabled,
+    initialVisibility = initialVisibility
+)
 
 fun CheckControl.bindTo(
     compoundButton: CompoundButton,
-    invisibleState: Int = View.GONE,
-    onVisibleChange: OnVisibleChangeAction? = null
+    bindEnable: Boolean = true,
+    bindVisible: Boolean = true
 ): Disposable {
     var editing = false
     return CompositeDisposable().apply {
-        add(defaultBindTo(compoundButton, invisibleState, onVisibleChange))
+        add(defaultBindTo(compoundButton, bindEnable, bindVisible))
         add(
             value
                 .toViewFlowable()
