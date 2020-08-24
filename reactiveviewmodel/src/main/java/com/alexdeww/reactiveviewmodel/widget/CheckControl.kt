@@ -1,11 +1,8 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.annotation.SuppressLint
-import android.view.View
 import android.widget.CompoundButton
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.disposables.Disposable
+import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 
 @SuppressLint("CheckResult")
 class CheckControl internal constructor(
@@ -25,33 +22,18 @@ fun checkControl(
 )
 
 fun CheckControl.bindTo(
+    rvmViewComponent: RvmViewComponent,
     compoundButton: CompoundButton,
     bindEnable: Boolean = true,
     bindVisible: Boolean = true
-): Disposable {
-    var editing = false
-    return CompositeDisposable().apply {
-        add(defaultBindTo(compoundButton, bindEnable, bindVisible))
-        add(
-            value
-                .toViewFlowable()
-                .subscribe {
-                    editing = true
-                    compoundButton.isChecked = it
-                    editing = false
-                }
-        )
-        add(
-            compoundButton
-                .checkedChanges
-                .filter { !editing }
-                .subscribe(actionChangeValue.consumer)
-        )
-    }
-}
-
-private val CompoundButton.checkedChanges: Observable<Boolean>
-    get() = Observable.create { emitter ->
-        setOnCheckedChangeListener { _, isChecked -> emitter.onNext(isChecked) }
-        emitter.setCancellable { setOnCheckedChangeListener(null) }
-    }
+) = baseBindTo(
+    rvmViewComponent = rvmViewComponent,
+    view = compoundButton,
+    bindEnable = bindEnable,
+    bindVisible = bindVisible,
+    onValueChanged = { compoundButton.isChecked = it },
+    onActiveAction = {
+        compoundButton.setOnCheckedChangeListener { _, isChecked -> changeValueConsumer.accept(isChecked) }
+    },
+    onInactiveAction = { compoundButton.setOnCheckedChangeListener(null) }
+)

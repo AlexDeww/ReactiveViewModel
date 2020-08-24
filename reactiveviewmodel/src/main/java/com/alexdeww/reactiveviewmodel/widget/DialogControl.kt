@@ -1,6 +1,9 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.app.Dialog
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.Observer
+import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Maybe
@@ -34,8 +37,7 @@ class DialogControl<T, R> internal constructor() : BaseControl() {
             .observable
             .doOnSubscribe { displayed.consumer.accept(Display.Displayed(data)) }
             .takeUntil(
-                displayed
-                    .observable
+                displayed.observable
                     .skip(1)
                     .filter { it == Display.Absent }
             )
@@ -69,30 +71,42 @@ class DialogControlResult<T, R> internal constructor(
 
 fun <T, R> dialogControl(): DialogControl<T, R> = DialogControl()
 
-fun <T, R> DialogControl<T, R>.bindTo(
-    createDialog: (data: T, dc: DialogControlResult<T, R>) -> Dialog
-): Disposable {
-    var dialog: Dialog? = null
-    val closeDialog: () -> Unit = {
-        dialog?.setOnDismissListener(null)
-        dialog?.dismiss()
-        dialog = null
-    }
+typealias ActionCreateDialog<T, R> = (data: T, dc: DialogControlResult<T, R>) -> Dialog
 
-    return displayed
-        .observable
-        .toFlowable(BackpressureStrategy.LATEST)
-        .observeOn(AndroidSchedulers.mainThread())
-        .doFinally { closeDialog() }
-        .subscribe {
-            when {
-                it is DialogControl.Display.Displayed<*> -> {
-                    @Suppress("UNCHECKED_CAST")
-                    dialog = createDialog(it.data as T, DialogControlResult(this))
-                    dialog?.setOnDismissListener { this.dismiss() }
-                    dialog?.show()
+fun <T, R> DialogControl<T, R>.bindTo(
+    rvmViewComponent: RvmViewComponent,
+    createDialog: ActionCreateDialog<T, R>
+) {
+    val mediator = object : MediatorLiveData<DialogControl.Display>() {
+        private var dialog: Dialog? = null
+
+        init {
+            addSource(displayed.liveData) {
+                value = it
+                when {
+                    it is DialogControl.Display.Displayed<*> -> {
+                        @Suppress("UNCHECKED_CAST")
+                        dialog = createDialog(it.data as T, DialogControlResult(this@bindTo))
+                        dialog?.setOnDismissListener { this@bindTo.dismiss() }
+                        dialog?.show()
+                    }
+                    it === DialogControl.Display.Absent -> closeDialog()
                 }
-                it === DialogControl.Display.Absent -> closeDialog()
             }
         }
+
+        override fun onInactive() {
+            closeDialog()
+            super.onInactive()
+        }
+
+        private fun closeDialog() {
+            dialog?.apply {
+                setOnDismissListener(null)
+                dismiss()
+            }
+            dialog = null
+        }
+    }
+    rvmViewComponent.run { mediator.observe { /* empty */ } }
 }

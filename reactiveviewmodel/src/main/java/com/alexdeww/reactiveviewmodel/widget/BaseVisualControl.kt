@@ -2,13 +2,11 @@ package com.alexdeww.reactiveviewmodel.widget
 
 import android.view.View
 import androidx.annotation.CallSuper
-import com.alexdeww.reactiveviewmodel.core.property.State
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.BackpressureStrategy
-import io.reactivex.rxjava3.core.Flowable
+import androidx.lifecycle.MediatorLiveData
+import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.functions.Consumer
+import java.lang.ref.WeakReference
 
 abstract class BaseVisualControl<T>(
     initialValue: T,
@@ -29,39 +27,11 @@ abstract class BaseVisualControl<T>(
     val actionChangeValue = action<T>()
 
     init {
-        actionChangeValue
-            .observable
+        actionChangeValue.observable
             .filter { it != value.value }
             .let { transformObservable(it) }
             .filter { it != value.value }
             .subscribe(::onChangedValue)
-    }
-
-    fun <T> State<T>.toViewFlowable(): Flowable<T> = this
-        .observable
-        .toFlowable(BackpressureStrategy.LATEST)
-        .observeOn(AndroidSchedulers.mainThread())
-
-    fun defaultBindTo(
-        view: View,
-        bindEnable: Boolean,
-        bindVisible: Boolean
-    ): Disposable = CompositeDisposable().apply {
-        if (bindEnable) {
-            add(
-                enabled
-                    .toViewFlowable()
-                    .subscribe { view.isEnabled = it }
-            )
-        }
-
-        if (bindVisible) {
-            add(
-                visibility
-                    .toViewFlowable()
-                    .subscribe { view.visibility = it.value }
-            )
-        }
     }
 
     protected open fun transformObservable(observable: Observable<T>): Observable<T> = observable
@@ -69,6 +39,77 @@ abstract class BaseVisualControl<T>(
     @CallSuper
     protected open fun onChangedValue(newValue: T) {
         value.consumer.accept(newValue)
+    }
+
+}
+
+typealias ActionOnValueChanged<T> = (newValue: T) -> Unit
+typealias ActionOnActive<T> = VisualControlLiveDataMediator<T>.() -> Unit
+typealias ActionOnInactive<T> = VisualControlLiveDataMediator<T>.() -> Unit
+
+fun <C : BaseVisualControl<T>, T, V : View> C.baseBindTo(
+    rvmViewComponent: RvmViewComponent,
+    view: V,
+    bindEnable: Boolean,
+    bindVisible: Boolean,
+    onValueChanged: ActionOnValueChanged<T>,
+    onActiveAction: ActionOnActive<T>,
+    onInactiveAction: ActionOnInactive<T>
+) {
+    val liveData = VisualControlLiveDataMediator(
+        control = this@baseBindTo,
+        view = view,
+        bindEnable = bindEnable,
+        bindVisible = bindVisible,
+        onValueChanged = onValueChanged,
+        onActiveAction = onActiveAction,
+        onInactiveAction = onInactiveAction
+    )
+    rvmViewComponent.run { liveData.observe { /* empty */ } }
+}
+
+class VisualControlLiveDataMediator<T>(
+    control: BaseVisualControl<T>,
+    view: View,
+    private val bindEnable: Boolean,
+    private val bindVisible: Boolean,
+    private val onValueChanged: ActionOnValueChanged<T>,
+    private val onActiveAction: ActionOnActive<T>,
+    private val onInactiveAction: ActionOnInactive<T>
+) : MediatorLiveData<Unit>() {
+
+    private val viewRef = WeakReference(view)
+    private val view: View? get() = viewRef.get()
+    private val controlRef = WeakReference(control)
+    private val control: BaseVisualControl<T>? get() = controlRef.get()
+    private var isEditing: Boolean = false
+
+    val changeValueConsumer = Consumer<T> {
+        if (!isEditing) this.control?.actionChangeValue?.call(it)
+    }
+
+    override fun onActive() {
+        super.onActive()
+        control?.apply {
+            if (bindEnable) addSource(enabled.liveData) { view?.isEnabled = it }
+            if (bindVisible) addSource(visibility.liveData) { view?.visibility = it.value }
+            addSource(value.liveData) { newValue ->
+                isEditing = true
+                onValueChanged(newValue)
+                isEditing = false
+            }
+        }
+        onActiveAction.invoke(this)
+    }
+
+    override fun onInactive() {
+        control?.apply {
+            if (bindEnable) removeSource(enabled.liveData)
+            if (bindVisible) removeSource(visibility.liveData)
+            removeSource(value.liveData)
+        }
+        onInactiveAction.invoke(this)
+        super.onInactive()
     }
 
 }

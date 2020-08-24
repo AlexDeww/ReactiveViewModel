@@ -21,10 +21,10 @@ fun <T> LiveData<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>):
 }
 
 fun <T> Event<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>): Observer<T> =
-    liveData.observe(owner, action)
+    liveData.observe(owner = owner, action = action)
 
 fun <T> State<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>): Observer<T> =
-    liveData.observe(owner, action)
+    liveData.observe(owner = owner, action = action)
 
 fun Action<Unit>.call() {
     call(Unit)
@@ -78,12 +78,8 @@ fun <T> Observable<T>.bufferWhileIdle(
     isIdle: Observable<Boolean>,
     bufferSize: Int? = null
 ): Observable<T> {
-
     val itemsObservable = this
-        .withLatestFrom(
-            isIdle,
-            BiFunction { t: T, idle: Boolean -> t to idle }
-        )
+        .withLatestFrom(isIdle, { t: T, idle: Boolean -> t to idle })
         .publish()
         .refCount(2)
 
@@ -106,8 +102,6 @@ fun <T> Observable<T>.bufferWhileIdle(
                             .filter { !it }
                     }
                 )
-                .flatMapIterable {
-                    if (bufferSize != null) it.takeLast(bufferSize) else it
-                }
+                .flatMapIterable { if (bufferSize != null) it.takeLast(bufferSize) else it }
         )
 }

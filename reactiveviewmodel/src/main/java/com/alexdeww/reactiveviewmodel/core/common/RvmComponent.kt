@@ -18,6 +18,8 @@ interface RvmComponent {
 
     val <T> State<T>.consumer: Consumer<T> get() = this.consumer
 
+    val <T> State<T>.observable: Observable<T> get() = this.observable
+
     val <T> Action<T>.observable: Observable<T> get() = this.observable
 
     fun <T> Event<T>.call(value: T) {

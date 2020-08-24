@@ -27,15 +27,17 @@ abstract class ReactiveViewModel : ViewModel(), RvmComponent {
         return this
     }
 
-    protected fun <T> state(initValue: T? = null): State<T> = State(initValue)
+    protected fun <T> state(initValue: T? = null, debounceInterval: Long? = null): State<T> =
+        State(initValue, debounceInterval)
 
-    protected fun <T> event(): Event<T> = Event()
+    protected fun <T> event(debounceInterval: Long? = null): Event<T> = Event(debounceInterval)
 
-    protected fun eventNone(): Event<Unit> = Event()
+    protected fun eventNone(debounceInterval: Long? = null): Event<Unit> = Event(debounceInterval)
 
-    protected fun <T> action(): Action<T> = Action()
+    protected fun <T> action(debounceInterval: Long? = null): Action<T> = Action(debounceInterval)
 
-    protected fun actionNone(): Action<Unit> = Action()
+    protected fun actionNone(debounceInterval: Long? = null): Action<Unit> =
+        Action(debounceInterval)
 
 }
 

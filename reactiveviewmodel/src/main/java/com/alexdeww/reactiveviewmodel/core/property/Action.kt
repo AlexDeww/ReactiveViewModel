@@ -4,11 +4,11 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.subjects.PublishSubject
 
-class Action<T> internal constructor() {
+class Action<T> internal constructor(debounceInterval: Long? = null) {
 
     private val subject = PublishSubject.create<T>().toSerialized()
 
-    internal val observable: Observable<T> = subject
+    internal val observable: Observable<T> = subject.letDebounce(debounceInterval)
 
     val consumer: Consumer<T> = Consumer { subject.onNext(it) }
 
