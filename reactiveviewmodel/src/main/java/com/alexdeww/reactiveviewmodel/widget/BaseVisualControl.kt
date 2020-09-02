@@ -30,7 +30,6 @@ abstract class BaseVisualControl<T>(
         actionChangeValue.observable
             .filter { it != value.value }
             .let { transformObservable(it) }
-            .filter { it != value.value }
             .subscribe(::onChangedValue)
     }
 
