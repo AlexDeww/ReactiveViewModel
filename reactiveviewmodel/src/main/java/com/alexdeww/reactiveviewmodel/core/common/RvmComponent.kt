@@ -32,4 +32,6 @@ interface RvmComponent {
 
     val <T> Event<T>.consumer: Consumer<T> get() = this.consumer
 
+    val <T> Event<T>.observable: Observable<T> get() = this.observable
+
 }
