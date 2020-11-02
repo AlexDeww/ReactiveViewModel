@@ -78,16 +78,14 @@ fun <T, R> DialogControl<T, R>.bindTo(
 ) {
     val liveData = DialogLiveDataMediator(
         control = this,
-        createDialog = createDialog,
-        lifecycleOwner = rvmViewComponent.componentLifecycleOwner
+        createDialog = createDialog
     )
     rvmViewComponent.run { liveData.observe { /* empty */ } }
 }
 
 private class DialogLiveDataMediator<T, R>(
     control: DialogControl<T, R>,
-    createDialog: ActionCreateDialog<T, R>,
-    private val lifecycleOwner: LifecycleOwner
+    createDialog: ActionCreateDialog<T, R>
 ) : MediatorLiveData<DialogControl.Display>() {
 
     private var dialog: Dialog? = null
@@ -108,10 +106,8 @@ private class DialogLiveDataMediator<T, R>(
     }
 
     override fun removeObserver(observer: Observer<in DialogControl.Display>) {
-        if (lifecycleOwner.lifecycle.currentState == Lifecycle.State.DESTROYED) {
-            closeDialog()
-        }
         super.removeObserver(observer)
+        closeDialog()
     }
 
     private fun closeDialog() {
