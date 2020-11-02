@@ -1,13 +1,10 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.app.Dialog
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Maybe
-import io.reactivex.rxjava3.disposables.Disposable
 
 sealed class DialogResult {
     object Accept : DialogResult()
@@ -50,8 +47,8 @@ class DialogControl<T, R> internal constructor() : BaseControl() {
 
 }
 
-class DialogControlResult<T, R> internal constructor(
-    private val dialogControl: DialogControl<T, R>
+class DialogControlResult<R> internal constructor(
+    private val dialogControl: DialogControl<*, R>
 ) {
 
     fun sendResult(result: R) {
@@ -71,7 +68,7 @@ class DialogControlResult<T, R> internal constructor(
 
 fun <T, R> dialogControl(): DialogControl<T, R> = DialogControl()
 
-typealias ActionCreateDialog<T, R> = (data: T, dc: DialogControlResult<T, R>) -> Dialog
+typealias ActionCreateDialog<T, R> = (data: T, dc: DialogControlResult<R>) -> Dialog
 
 fun <T, R> DialogControl<T, R>.bindTo(
     rvmViewComponent: RvmViewComponent,
@@ -96,7 +93,9 @@ fun <T, R> DialogControl<T, R>.bindTo(
         }
 
         override fun onInactive() {
-            closeDialog()
+            if (rvmViewComponent.componentLifecycleOwner.lifecycle.currentState == Lifecycle.State.DESTROYED) {
+                closeDialog()
+            }
             super.onInactive()
         }
 
