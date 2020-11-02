@@ -29,43 +29,53 @@ class EnterSmsCodeViewModel(
     private val requestSmsCode: RequestSmsCode,
     private val registerOrSignIn: RegisterOrSignIn
 ): ReactiveViewModel() {
-    val isProgress = state(false)
-    
-    val inputSmsCode = inputControl()
-    
-    val actionSendSmsCodeAgain = actionEmpty()
-    
-    val eventError = event<Throwable>()
-    val eventDone = eventEmpty()
-    val eventShowSmsCode = event<String>()
+
+    private val eventCancelTimer = eventNone()
+
+    val progressVisibility = state(initValue, PROGRESS_DEBOUNCE_INTERVAL)
+    val timerVisibility = state(false)
+    val timerValue = state<Long>()
+    val blocked = state(false)
+
+    val inputCode = inputControl()
+
+    val eventWrongSmsCode = eventNone()
+    val eventGoToTripStart = eventNone()
+    val eventGoToAcceptPolicy = eventNone()
+    val eventCodeExpired = eventNone()
+
+    val actionSendCodeAgainClick = debouncedActionNone()
     
     init {
-        inputSmsCode.value
-	    .observable
-	    .debounce(250, TimeUnit.MILLISECONDS)
-	    .filter { it.length == SMS_CODE_LENGTH }
-	    .switchMapSingle {
-                registerOrSignIn
-                    .asSingle(RegisterOrSignIn.Params(fullPhoneNumber, it))
-                    .bindProgress(isProgress.consumer)
-                    .doOnError(eventError.consumer)
-            }
-	    .retry()
-	    .subscribe { eventDone.call() }
-	    .disposeOnCleared()
-	    
-	actionSendSmsCodeAgain
-	    .observable
-            .filter { isProgress.value == false }
-            .switchMap {
-                requestSmsCode
-		    .asSingle(fullPhoneNumber)
-                    .bindProgress(isProgress.consumer)
-		    .doOnError(eventError.consumer)
-            }
+        inputCode.value.observable
+            .filter { blocked.value == false && progressVisibility.value == false }
+            .debounce()
+            .filter { it.length == SMS_CODE_LENGTH }
+            .doOnNext { analyticsManager.trackEvent(AppAnalyticEvents.ConfirmPhone) }
+            .switchMapSingle { register(it) }
+            .doOnError { inputCode.actionChangeValue.call("") }
             .retry()
-            .subscribe(eventShowSmsCode.consumer)
+            .subscribe {
+                when {
+                    it -> eventGoToTripStart.call()
+                    else -> eventGoToAcceptPolicy.call()
+                }
+            }
             .disposeOnCleared()
+
+        actionSendCodeAgainClick.observable
+            .filter { blocked.value == false && timerVisibility.value == false && progressVisibility.value == false }
+            .switchMapSingle { requestCode() }
+            .switchMap { getTimerObservable(it) }
+            .retry()
+            .subscribe()
+            .disposeOnCleared()
+
+        getRequestSmsTimerValue.execute(Unit)
+            .takeIf { it > 0 }
+            ?.let { getTimerObservable(it) }
+            ?.subscribe()
+            ?.disposeOnCleared()
     }
 }
 ```
@@ -88,16 +98,15 @@ class EnterSmsCodeFragment : ReactiveFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-	viewModel.isProgress.observe { if (it) showProgress() else hideProgress() }
+	viewModel.progressVisibility.observe { if (it) showProgress() else hideProgress() }
+	viewModel.timerValue.observe { tvTimer.text = formatTimer(it) }
+	viewModel.timerVisibility.observe { tvTimer.isVisible = it }
 	
 	viewModel.eventError.observe { showError(it) }
-	viewModel.eventDone.observe { router.newRootScreen(Screens.Main.TripSetupFlowScreen()) }
+	viewModel.eventGoToTripStart.observe { router.newRootScreen(Screens.Main.TripSetupFlowScreen()) }
 	
-	viewModel.inputSmsCode
-            .bindTo(etSmsCode)
-            .disposeOnDestroyView("inputSmsCode")
-	    
-	viewModel.actionSendSmsCodeAgain.bindOnClick(btnSendSmsAgain)
+	viewModel.inputCode.bindTo(etSmsCode)
+        viewModel.actionSendCodeAgainClick.bindOnClick(btnSendAgain)
     }
     
 }
