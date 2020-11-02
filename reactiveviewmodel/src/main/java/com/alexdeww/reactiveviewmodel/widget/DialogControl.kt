@@ -2,6 +2,7 @@ package com.alexdeww.reactiveviewmodel.widget
 
 import android.app.Dialog
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MediatorLiveData
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import io.reactivex.rxjava3.core.Maybe
@@ -74,38 +75,50 @@ fun <T, R> DialogControl<T, R>.bindTo(
     rvmViewComponent: RvmViewComponent,
     createDialog: ActionCreateDialog<T, R>
 ) {
-    val mediator = object : MediatorLiveData<DialogControl.Display>() {
-        private var dialog: Dialog? = null
+    val liveData = DialogLiveDataMediator(
+        control = this,
+        createDialog = createDialog,
+        lifecycleOwner = rvmViewComponent.componentLifecycleOwner
+    )
+    rvmViewComponent.run { liveData.observe { /* empty */ } }
+}
 
-        init {
-            addSource(displayed.liveData) {
-                value = it
-                when {
-                    it is DialogControl.Display.Displayed<*> -> {
-                        @Suppress("UNCHECKED_CAST")
-                        dialog = createDialog(it.data as T, DialogControlResult(this@bindTo))
-                        dialog?.setOnDismissListener { this@bindTo.dismiss() }
-                        dialog?.show()
-                    }
-                    it === DialogControl.Display.Absent -> closeDialog()
+private class DialogLiveDataMediator<T, R>(
+    control: DialogControl<T, R>,
+    createDialog: ActionCreateDialog<T, R>,
+    private val lifecycleOwner: LifecycleOwner
+) : MediatorLiveData<DialogControl.Display>() {
+
+    private var dialog: Dialog? = null
+
+    init {
+        addSource(control.displayed.liveData) {
+            value = it
+            when {
+                it is DialogControl.Display.Displayed<*> -> {
+                    @Suppress("UNCHECKED_CAST")
+                    dialog = createDialog(it.data as T, DialogControlResult(control))
+                    dialog?.setOnDismissListener { control.dismiss() }
+                    dialog?.show()
                 }
+                it === DialogControl.Display.Absent -> closeDialog()
             }
-        }
-
-        override fun onInactive() {
-            if (rvmViewComponent.componentLifecycleOwner.lifecycle.currentState == Lifecycle.State.DESTROYED) {
-                closeDialog()
-            }
-            super.onInactive()
-        }
-
-        private fun closeDialog() {
-            dialog?.apply {
-                setOnDismissListener(null)
-                dismiss()
-            }
-            dialog = null
         }
     }
-    rvmViewComponent.run { mediator.observe { /* empty */ } }
+
+    override fun onInactive() {
+        if (lifecycleOwner.lifecycle.currentState == Lifecycle.State.DESTROYED) {
+            closeDialog()
+        }
+        super.onInactive()
+    }
+
+    private fun closeDialog() {
+        dialog?.apply {
+            setOnDismissListener(null)
+            dismiss()
+        }
+        dialog = null
+    }
+
 }
