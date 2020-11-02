@@ -4,6 +4,7 @@ import android.app.Dialog
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import io.reactivex.rxjava3.core.Maybe
 
@@ -106,11 +107,11 @@ private class DialogLiveDataMediator<T, R>(
         }
     }
 
-    override fun onInactive() {
+    override fun removeObserver(observer: Observer<in DialogControl.Display>) {
         if (lifecycleOwner.lifecycle.currentState == Lifecycle.State.DESTROYED) {
             closeDialog()
         }
-        super.onInactive()
+        super.removeObserver(observer)
     }
 
     private fun closeDialog() {
