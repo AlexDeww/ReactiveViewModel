@@ -30,11 +30,12 @@ class DialogControl<T, R> internal constructor() : BaseControl() {
         displayed.consumer.accept(Display.Displayed(data))
     }
 
-    fun showForResult(data: T): Maybe<R> {
+    fun showForResult(data: T, dismissOnDispose: Boolean = false): Maybe<R> {
         dismiss()
         return result
             .observable
             .doOnSubscribe { displayed.consumer.accept(Display.Displayed(data)) }
+            .doOnDispose { if (dismissOnDispose) dismiss() }
             .takeUntil(
                 displayed.observable
                     .skip(1)
