@@ -13,10 +13,9 @@ class State<T> internal constructor(
     debounceInterval: Long? = null
 ) {
 
-    private val subject = if (initValue == null) {
-        BehaviorSubject.create<T>()
-    } else {
-        BehaviorSubject.createDefault<T>(initValue)
+    private val subject = when (initValue) {
+        null -> BehaviorSubject.create<T>()
+        else -> BehaviorSubject.createDefault<T>(initValue)
     }
     private val serializedSubject = subject.toSerialized()
 
