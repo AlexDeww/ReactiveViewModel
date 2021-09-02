@@ -33,7 +33,9 @@ fun CheckControl.bindTo(
     bindVisible = bindVisible,
     onValueChanged = { compoundButton.isChecked = it },
     onActiveAction = {
-        compoundButton.setOnCheckedChangeListener { _, isChecked -> changeValueConsumer.accept(isChecked) }
+        compoundButton.setOnCheckedChangeListener { _, isChecked ->
+            changeValueConsumer.accept(isChecked)
+        }
     },
     onInactiveAction = { compoundButton.setOnCheckedChangeListener(null) }
 )

@@ -3,13 +3,15 @@ package com.alexdeww.reactiveviewmodel.widget
 import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 
-class DisplayableControl<T> internal constructor(debounceInterval: Long? = null) : BaseControl() {
+class DisplayableControl<T : Any> internal constructor(
+    debounceInterval: Long? = null
+) : BaseControl() {
 
-    sealed class Action<out T> {
+    sealed class Action<out T : Any> {
         object Hide : Action<Nothing>()
-        data class Show<T>(val data: T) : Action<T>()
+        data class Show<T : Any>(val data: T) : Action<T>()
 
-        val isShowing: Boolean get() = this is Show<*>
+        val isShowing: Boolean get() = this is Show
         fun getShowingValue(): T? = (this as? Show<T>)?.data
     }
 
@@ -27,19 +29,19 @@ class DisplayableControl<T> internal constructor(debounceInterval: Long? = null)
 
 }
 
-fun <T> displayableControl(debounceInterval: Long? = null): DisplayableControl<T> =
+fun <T : Any> displayableControl(debounceInterval: Long? = null): DisplayableControl<T> =
     DisplayableControl(debounceInterval)
 
 typealias DisplayableAction<T> = (isVisible: Boolean, data: T?) -> Unit
 
-fun <T> DisplayableControl<T>.observe(
+fun <T : Any> DisplayableControl<T>.observe(
     rvmViewComponent: RvmViewComponent,
     action: DisplayableAction<T>
 ): Observer<DisplayableControl.Action<T>> = rvmViewComponent.run {
     this@observe.action.observe { action.invoke(it.isShowing, it.getShowingValue()) }
 }
 
-fun <T> DisplayableControl<T>.observe(
+fun <T : Any> DisplayableControl<T>.observe(
     rvmViewComponent: RvmViewComponent,
     onShow: (T) -> Unit,
     onHide: () -> Unit

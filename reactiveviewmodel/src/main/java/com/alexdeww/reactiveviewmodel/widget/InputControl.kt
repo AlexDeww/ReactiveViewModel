@@ -6,8 +6,6 @@ import android.widget.EditText
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import com.google.android.material.textfield.TextInputLayout
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.disposables.Disposable
 
 typealias FormatterAction = (text: String) -> String
 

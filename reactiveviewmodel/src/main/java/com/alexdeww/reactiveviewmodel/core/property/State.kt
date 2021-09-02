@@ -8,14 +8,14 @@ import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import java.util.concurrent.TimeUnit
 
-class State<T> internal constructor(
+class State<T : Any> internal constructor(
     initValue: T? = null,
     debounceInterval: Long? = null
 ) {
 
     private val subject = when (initValue) {
-        null -> BehaviorSubject.create<T>()
-        else -> BehaviorSubject.createDefault<T>(initValue)
+        null -> BehaviorSubject.create()
+        else -> BehaviorSubject.createDefault(initValue)
     }
     private val serializedSubject = subject.toSerialized()
 

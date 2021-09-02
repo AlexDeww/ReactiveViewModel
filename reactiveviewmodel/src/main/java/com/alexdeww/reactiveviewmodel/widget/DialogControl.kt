@@ -1,8 +1,6 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.app.Dialog
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
@@ -13,17 +11,17 @@ sealed class DialogResult {
     object Cancel : DialogResult()
 }
 
-class DialogControl<T, R> internal constructor() : BaseControl() {
+class DialogControl<T : Any, R : Any> internal constructor() : BaseControl() {
 
-    sealed class Display {
-        data class Displayed<T>(val data: T) : Display()
-        object Absent : Display()
+    sealed class Display<out T : Any> {
+        data class Displayed<T : Any>(val data: T) : Display<T>()
+        object Absent : Display<Nothing>()
     }
 
     internal val result = action<R>()
 
-    val displayed = state<Display>(Display.Absent)
-    val isShowing get() = displayed.value is Display.Displayed<*>
+    val displayed = state<Display<T>>(Display.Absent)
+    val isShowing get() = displayed.value is Display.Displayed
 
     fun show(data: T) {
         dismiss()
@@ -50,7 +48,7 @@ class DialogControl<T, R> internal constructor() : BaseControl() {
 
 }
 
-class DialogControlResult<R> internal constructor(
+class DialogControlResult<R : Any> internal constructor(
     private val dialogControl: DialogControl<*, R>
 ) {
 
@@ -69,11 +67,13 @@ class DialogControlResult<R> internal constructor(
 
 }
 
-fun <T, R> dialogControl(): DialogControl<T, R> = DialogControl()
+fun <T : Any, R : Any> dialogControl(): DialogControl<T, R> = DialogControl()
+
+fun <T : Any> dialogControlWithResult(): DialogControl<T, DialogResult> = DialogControl()
 
 typealias ActionCreateDialog<T, R> = (data: T, dc: DialogControlResult<R>) -> Dialog
 
-fun <T, R> DialogControl<T, R>.bindTo(
+fun <T : Any, R : Any> DialogControl<T, R>.bindTo(
     rvmViewComponent: RvmViewComponent,
     createDialog: ActionCreateDialog<T, R>
 ) {
@@ -84,29 +84,28 @@ fun <T, R> DialogControl<T, R>.bindTo(
     rvmViewComponent.run { liveData.observe { /* empty */ } }
 }
 
-private class DialogLiveDataMediator<T, R>(
+private class DialogLiveDataMediator<T : Any, R : Any>(
     control: DialogControl<T, R>,
     createDialog: ActionCreateDialog<T, R>
-) : MediatorLiveData<DialogControl.Display>() {
+) : MediatorLiveData<DialogControl.Display<T>>() {
 
     private var dialog: Dialog? = null
 
     init {
-        addSource(control.displayed.liveData) {
-            value = it
-            when {
-                it is DialogControl.Display.Displayed<*> -> {
-                    @Suppress("UNCHECKED_CAST")
-                    dialog = createDialog(it.data as T, DialogControlResult(control))
+        addSource(control.displayed.liveData) { displayData ->
+            value = displayData
+            when (displayData) {
+                is DialogControl.Display.Displayed -> {
+                    dialog = createDialog(displayData.data, DialogControlResult(control))
                     dialog?.setOnDismissListener { control.dismiss() }
                     dialog?.show()
                 }
-                it === DialogControl.Display.Absent -> closeDialog()
+                DialogControl.Display.Absent -> closeDialog()
             }
         }
     }
 
-    override fun removeObserver(observer: Observer<in DialogControl.Display>) {
+    override fun removeObserver(observer: Observer<in DialogControl.Display<T>>) {
         super.removeObserver(observer)
         closeDialog()
     }

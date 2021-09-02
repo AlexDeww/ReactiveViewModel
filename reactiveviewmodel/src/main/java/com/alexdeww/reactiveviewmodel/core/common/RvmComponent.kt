@@ -8,30 +8,26 @@ import io.reactivex.rxjava3.functions.Consumer
 
 interface RvmComponent {
 
-    fun <T> State<T>.setValue(value: T) {
+    fun <T : Any> State<T>.setValue(value: T) {
         this.consumer.accept(value)
     }
 
-    fun <T> State<T>.setValueIfChanged(value: T) {
+    fun <T : Any> State<T>.setValueIfChanged(value: T) {
         if (this.value != value) this.consumer.accept(value)
     }
 
-    val <T> State<T>.consumer: Consumer<T> get() = this.consumer
+    val <T : Any> State<T>.consumer: Consumer<T> get() = this.consumer
 
-    val <T> State<T>.observable: Observable<T> get() = this.observable
+    val <T : Any> State<T>.observable: Observable<T> get() = this.observable
 
-    val <T> Action<T>.observable: Observable<T> get() = this.observable
+    val <T : Any> Action<T>.observable: Observable<T> get() = this.observable
 
-    fun <T> Event<T>.call(value: T) {
-        this.consumer.accept(value)
-    }
+    fun <T : Any> Event<T>.call(value: T) = this.consumer.accept(value)
 
-    fun Event<Unit>.call() {
-        this.consumer.accept(Unit)
-    }
+    fun Event<Unit>.call() = this.consumer.accept(Unit)
 
-    val <T> Event<T>.consumer: Consumer<T> get() = this.consumer
+    val <T : Any> Event<T>.consumer: Consumer<T> get() = this.consumer
 
-    val <T> Event<T>.observable: Observable<T> get() = this.observable
+    val <T : Any> Event<T>.observable: Observable<T> get() = this.observable
 
 }

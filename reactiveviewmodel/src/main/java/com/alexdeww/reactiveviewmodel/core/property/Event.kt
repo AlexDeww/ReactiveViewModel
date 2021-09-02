@@ -9,7 +9,7 @@ import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Event<T> internal constructor(debounceInterval: Long? = null) {
+class Event<T : Any> internal constructor(debounceInterval: Long? = null) {
 
     private val subject = BehaviorSubject.create<T>()
     private val serializedSubject = subject.toSerialized()

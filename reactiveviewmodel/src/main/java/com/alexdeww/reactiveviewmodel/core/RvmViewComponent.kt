@@ -25,19 +25,19 @@ interface RvmViewComponent {
     fun <T> LiveData<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
         observe(owner = componentLifecycleOwner, action = action)
 
-    fun <T> State<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
+    fun <T : Any> State<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
         observe(componentLifecycleOwner, action)
 
-    fun <T> Event<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
+    fun <T : Any> Event<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
         observe(componentLifecycleOwner, action)
 
-    fun <T> DisplayableControl<T>.observe(
+    fun <T : Any> DisplayableControl<T>.observe(
         action: DisplayableAction<T>
     ): Observer<DisplayableControl.Action<T>> = this@observe.action.observe {
         action.invoke(it.isShowing, it.getShowingValue())
     }
 
-    fun <T> DisplayableControl<T>.observe(
+    fun <T : Any> DisplayableControl<T>.observe(
         onShow: (T) -> Unit,
         onHide: () -> Unit
     ): Observer<DisplayableControl.Action<T>> = this@observe.action.observe {
@@ -58,7 +58,7 @@ interface RvmViewComponent {
         bindVisible = bindVisible
     )
 
-    fun <T, R> DialogControl<T, R>.bindTo(
+    fun <T : Any, R : Any> DialogControl<T, R>.bindTo(
         createDialog: ActionCreateDialog<T, R>
     ) = bindTo(
         rvmViewComponent = this@RvmViewComponent,

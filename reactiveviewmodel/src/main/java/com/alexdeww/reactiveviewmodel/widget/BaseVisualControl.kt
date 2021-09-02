@@ -8,7 +8,7 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Consumer
 import java.lang.ref.WeakReference
 
-abstract class BaseVisualControl<T>(
+abstract class BaseVisualControl<T : Any>(
     initialValue: T,
     initialEnabled: Boolean,
     initialVisibility: Visibility
@@ -46,7 +46,7 @@ typealias ActionOnValueChanged<T> = (newValue: T) -> Unit
 typealias ActionOnActive<T> = VisualControlLiveDataMediator<T>.() -> Unit
 typealias ActionOnInactive<T> = VisualControlLiveDataMediator<T>.() -> Unit
 
-fun <C : BaseVisualControl<T>, T, V : View> C.baseBindTo(
+fun <C : BaseVisualControl<T>, T : Any, V : View> C.baseBindTo(
     rvmViewComponent: RvmViewComponent,
     view: V,
     bindEnable: Boolean,
@@ -67,7 +67,7 @@ fun <C : BaseVisualControl<T>, T, V : View> C.baseBindTo(
     rvmViewComponent.run { liveData.observe { /* empty */ } }
 }
 
-class VisualControlLiveDataMediator<T>(
+class VisualControlLiveDataMediator<T : Any>(
     control: BaseVisualControl<T>,
     view: View,
     private val bindEnable: Boolean,

@@ -8,7 +8,6 @@ import com.alexdeww.reactiveviewmodel.core.property.Action
 import com.alexdeww.reactiveviewmodel.core.property.Event
 import com.alexdeww.reactiveviewmodel.core.property.State
 import io.reactivex.rxjava3.core.*
-import io.reactivex.rxjava3.functions.BiFunction
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.functions.Function
 
@@ -20,19 +19,17 @@ fun <T> LiveData<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>):
     return observer
 }
 
-fun <T> Event<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>): Observer<T> =
+fun <T : Any> Event<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>): Observer<T> =
     liveData.observe(owner = owner, action = action)
 
-fun <T> State<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>): Observer<T> =
+fun <T : Any> State<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>): Observer<T> =
     liveData.observe(owner = owner, action = action)
 
-fun Action<Unit>.call() {
-    call(Unit)
-}
+fun Action<Unit>.call() = call(Unit)
 
 typealias ActionOnClick = () -> Unit
 
-fun <T> Action<T>.bindOnClick(view: View, value: T, onClickAction: ActionOnClick? = null) {
+fun <T : Any> Action<T>.bindOnClick(view: View, value: T, onClickAction: ActionOnClick? = null) {
     view.setOnClickListener {
         call(value)
         onClickAction?.invoke()
@@ -43,19 +40,19 @@ fun Action<Unit>.bindOnClick(view: View, onClickAction: ActionOnClick? = null) {
     bindOnClick(view, Unit, onClickAction)
 }
 
-fun <T> Observable<T>.bindProgress(progressConsumer: Consumer<Boolean>): Observable<T> = this
+fun <T : Any> Observable<T>.bindProgress(progressConsumer: Consumer<Boolean>): Observable<T> = this
     .doOnSubscribe { progressConsumer.accept(true) }
     .doFinally { progressConsumer.accept(false) }
 
-fun <T> Flowable<T>.bindProgress(progressConsumer: Consumer<Boolean>): Flowable<T> = this
+fun <T : Any> Flowable<T>.bindProgress(progressConsumer: Consumer<Boolean>): Flowable<T> = this
     .doOnSubscribe { progressConsumer.accept(true) }
     .doFinally { progressConsumer.accept(false) }
 
-fun <T> Single<T>.bindProgress(progressConsumer: Consumer<Boolean>): Single<T> = this
+fun <T : Any> Single<T>.bindProgress(progressConsumer: Consumer<Boolean>): Single<T> = this
     .doOnSubscribe { progressConsumer.accept(true) }
     .doFinally { progressConsumer.accept(false) }
 
-fun <T> Maybe<T>.bindProgress(progressConsumer: Consumer<Boolean>): Maybe<T> = this
+fun <T : Any> Maybe<T>.bindProgress(progressConsumer: Consumer<Boolean>): Maybe<T> = this
     .doOnSubscribe { progressConsumer.accept(true) }
     .doFinally { progressConsumer.accept(false) }
 
@@ -63,7 +60,7 @@ fun Completable.bindProgress(progressConsumer: Consumer<Boolean>): Completable =
     .doOnSubscribe { progressConsumer.accept(true) }
     .doFinally { progressConsumer.accept(false) }
 
-fun <T> Single<T>.bindProgressAny(progressConsumer: Consumer<Boolean>): Single<T> = this
+fun <T : Any> Single<T>.bindProgressAny(progressConsumer: Consumer<Boolean>): Single<T> = this
     .doOnSubscribe { progressConsumer.accept(true) }
     .doOnSuccess { progressConsumer.accept(false) }
     .doOnError { progressConsumer.accept(false) }
@@ -74,7 +71,7 @@ fun <T> Single<T>.bindProgressAny(progressConsumer: Consumer<Boolean>): Single<T
  * @param isIdle shows when the idle state begins (`true`) and ends (`false`).
  * @param bufferSize number of items the buffer can hold. `null` means not constrained.
  */
-fun <T> Observable<T>.bufferWhileIdle(
+fun <T : Any> Observable<T>.bufferWhileIdle(
     isIdle: Observable<Boolean>,
     bufferSize: Int? = null
 ): Observable<T> {
