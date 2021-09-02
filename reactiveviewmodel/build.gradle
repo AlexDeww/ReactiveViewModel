@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion sdk_version
@@ -34,4 +35,16 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:$archx_version"
     implementation "androidx.appcompat:appcompat:$appcompatx_version"
     implementation "com.google.android.material:material:$material_version"
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.alexdeww.reactiveviewmodel'
+                version = '2.3.5'
+            }
+        }
+    }
 }
