@@ -3,7 +3,7 @@
 buildscript {
     ext {
         min_sdk_version = 17
-        sdk_version = 30
+        sdk_version = 31
 
         kotlin_version = '1.6.0'
         rxjava_version = '3.1.2'
@@ -11,6 +11,7 @@ buildscript {
         archx_version = '2.2.0'
         appcompatx_version = '1.4.0'
         material_version = '1.4.0'
+        androidx_core = '1.7.0'
     }
     repositories {
         google()
