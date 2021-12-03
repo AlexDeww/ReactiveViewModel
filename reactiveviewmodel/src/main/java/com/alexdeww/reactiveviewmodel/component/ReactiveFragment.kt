@@ -1,5 +1,6 @@
 package com.alexdeww.reactiveviewmodel.component
 
+import androidx.annotation.CallSuper
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
@@ -14,18 +15,21 @@ abstract class ReactiveFragment : Fragment(), RvmViewComponent {
     override val componentLifecycleOwner: LifecycleOwner
         get() = viewLifecycleOwner
 
+    @CallSuper
     override fun onStop() {
         disposableOnStopList.values.forEach { it.dispose() }
         disposableOnStopList.clear()
         super.onStop()
     }
 
+    @CallSuper
     override fun onDestroyView() {
         disposableOnDestroyViewList.values.forEach { it.dispose() }
         disposableOnDestroyViewList.clear()
         super.onDestroyView()
     }
 
+    @CallSuper
     override fun onDestroy() {
         disposableOnDestroyList.values.forEach { it.dispose() }
         disposableOnDestroyList.clear()

@@ -1,34 +1,29 @@
 package com.alexdeww.reactiveviewmodel.widget
 
-import android.annotation.SuppressLint
 import android.text.*
 import android.widget.EditText
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import com.google.android.material.textfield.TextInputLayout
-import io.reactivex.rxjava3.core.Observable
 
 typealias FormatterAction = (text: String) -> String
 
-@SuppressLint("CheckResult")
 class InputControl internal constructor(
     initialText: String,
     private val hideErrorOnUserInput: Boolean,
-    private val formatter: FormatterAction?,
+    formatter: FormatterAction?,
     initialEnabled: Boolean,
     initialVisibility: Visibility
 ) : BaseVisualControl<String>(initialText, initialEnabled, initialVisibility) {
 
-    val error = state<String>()
-
-    override fun transformObservable(
-        observable: Observable<String>
-    ): Observable<String> = observable.map { s ->
-        formatter?.let { it(s) } ?: s
+    init {
+        value.valueChangesHook = formatter
     }
 
+    val error = state<String>()
+
     override fun onChangedValue(newValue: String) {
-        super.onChangedValue(newValue)
         if (hideErrorOnUserInput) error.consumer.accept("")
+        super.onChangedValue(newValue)
     }
 
 }

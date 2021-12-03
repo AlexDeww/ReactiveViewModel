@@ -4,7 +4,6 @@ import android.view.View
 import androidx.annotation.CallSuper
 import androidx.lifecycle.MediatorLiveData
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Consumer
 import java.lang.ref.WeakReference
 
@@ -29,11 +28,8 @@ abstract class BaseVisualControl<T : Any>(
     init {
         actionChangeValue.observable
             .filter { it != value.value }
-            .let { transformObservable(it) }
             .subscribe(::onChangedValue)
     }
-
-    protected open fun transformObservable(observable: Observable<T>): Observable<T> = observable
 
     @CallSuper
     protected open fun onChangedValue(newValue: T) {

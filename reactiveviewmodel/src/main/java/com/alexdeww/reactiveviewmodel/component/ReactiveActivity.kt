@@ -1,5 +1,6 @@
 package com.alexdeww.reactiveviewmodel.component
 
+import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
@@ -13,12 +14,14 @@ abstract class ReactiveActivity : AppCompatActivity(), RvmViewComponent {
     override val componentLifecycleOwner: LifecycleOwner
         get() = this
 
+    @CallSuper
     override fun onStop() {
         disposableOnStopList.values.forEach { it.dispose() }
         disposableOnStopList.clear()
         super.onStop()
     }
 
+    @CallSuper
     override fun onDestroy() {
         disposableOnDestroyList.values.forEach { it.dispose() }
         disposableOnDestroyList.clear()
