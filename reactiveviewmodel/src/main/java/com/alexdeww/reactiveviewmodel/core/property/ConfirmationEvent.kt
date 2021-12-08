@@ -16,6 +16,9 @@ class ConfirmationEvent<T : Any> internal constructor(debounceInterval: Long? = 
     private sealed class EventType {
         data class Pending(val data: Any) : EventType()
         object Confirmed : EventType()
+
+        @Suppress("UNCHECKED_CAST")
+        fun <T> tryGetData(): T? = if (this is Pending) data as T else null
     }
 
     private val eventState = State<EventType>(EventType.Confirmed, debounceInterval)
@@ -69,7 +72,7 @@ class ConfirmationEvent<T : Any> internal constructor(debounceInterval: Long? = 
         @Suppress("UNCHECKED_CAST")
         override fun onActive() {
             super.onActive()
-            addSource(eventState.liveData) { value = (it as? EventType.Pending)?.data as T }
+            addSource(eventState.liveData) { value = it.tryGetData<T>() }
         }
 
         override fun onInactive() {
