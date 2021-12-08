@@ -37,7 +37,7 @@ class ConfirmationEvent<T : Any> internal constructor(debounceInterval: Long? = 
     val isConfirmed: Boolean get() = eventState.value === EventType.Confirmed
 
     fun confirm() {
-        eventState.consumer.accept(EventType.Confirmed)
+        if (!isConfirmed) eventState.consumer.accept(EventType.Confirmed)
     }
 
     private inner class ConfirmationEventLiveData : MediatorLiveData<T>() {
