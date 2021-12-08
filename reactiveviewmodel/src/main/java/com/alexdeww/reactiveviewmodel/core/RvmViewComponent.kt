@@ -6,6 +6,7 @@ import android.widget.RatingBar
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import com.alexdeww.reactiveviewmodel.core.property.ConfirmationEvent
 import com.alexdeww.reactiveviewmodel.core.property.Event
 import com.alexdeww.reactiveviewmodel.core.property.State
 import com.alexdeww.reactiveviewmodel.widget.*
@@ -29,6 +30,9 @@ interface RvmViewComponent {
         observe(componentLifecycleOwner, action)
 
     fun <T : Any> Event<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
+        observe(componentLifecycleOwner, action)
+
+    fun <T : Any> ConfirmationEvent<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
         observe(componentLifecycleOwner, action)
 
     fun <T : Any> DisplayableControl<T>.observe(

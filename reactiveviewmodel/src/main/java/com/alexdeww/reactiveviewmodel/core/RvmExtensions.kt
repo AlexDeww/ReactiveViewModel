@@ -5,6 +5,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.property.Action
+import com.alexdeww.reactiveviewmodel.core.property.ConfirmationEvent
 import com.alexdeww.reactiveviewmodel.core.property.Event
 import com.alexdeww.reactiveviewmodel.core.property.State
 import io.reactivex.rxjava3.core.*
@@ -19,11 +20,20 @@ fun <T> LiveData<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>):
     return observer
 }
 
-fun <T : Any> Event<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>): Observer<T> =
-    liveData.observe(owner = owner, action = action)
+fun <T : Any> Event<T>.observe(
+    owner: LifecycleOwner,
+    action: OnLiveDataAction<T>
+): Observer<T> = liveData.observe(owner = owner, action = action)
 
-fun <T : Any> State<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>): Observer<T> =
-    liveData.observe(owner = owner, action = action)
+fun <T : Any> ConfirmationEvent<T>.observe(
+    owner: LifecycleOwner,
+    action: OnLiveDataAction<T>
+): Observer<T> = liveData.observe(owner = owner, action = action)
+
+fun <T : Any> State<T>.observe(
+    owner: LifecycleOwner,
+    action: OnLiveDataAction<T>
+): Observer<T> = liveData.observe(owner = owner, action = action)
 
 fun Action<Unit>.call() = call(Unit)
 

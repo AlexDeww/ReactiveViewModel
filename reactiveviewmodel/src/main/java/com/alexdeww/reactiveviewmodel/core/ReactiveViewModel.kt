@@ -3,6 +3,7 @@ package com.alexdeww.reactiveviewmodel.core
 import androidx.lifecycle.ViewModel
 import com.alexdeww.reactiveviewmodel.core.common.RvmComponent
 import com.alexdeww.reactiveviewmodel.core.property.Action
+import com.alexdeww.reactiveviewmodel.core.property.ConfirmationEvent
 import com.alexdeww.reactiveviewmodel.core.property.Event
 import com.alexdeww.reactiveviewmodel.core.property.State
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -35,6 +36,12 @@ abstract class ReactiveViewModel : ViewModel(), RvmComponent {
 
     protected fun eventNone(debounceInterval: Long? = null): Event<Unit> =
         Event(debounceInterval)
+
+    protected fun <T : Any> confirmationEvent(debounceInterval: Long? = null): ConfirmationEvent<T> =
+        ConfirmationEvent(debounceInterval)
+
+    protected fun confirmationEventNone(debounceInterval: Long? = null): ConfirmationEvent<Unit> =
+        ConfirmationEvent(debounceInterval)
 
     protected fun <T : Any> action(debounceInterval: Long? = null): Action<T> =
         Action(debounceInterval)

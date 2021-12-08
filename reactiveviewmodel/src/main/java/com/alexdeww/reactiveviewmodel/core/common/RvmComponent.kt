@@ -1,6 +1,7 @@
 package com.alexdeww.reactiveviewmodel.core.common
 
 import com.alexdeww.reactiveviewmodel.core.property.Action
+import com.alexdeww.reactiveviewmodel.core.property.ConfirmationEvent
 import com.alexdeww.reactiveviewmodel.core.property.Event
 import com.alexdeww.reactiveviewmodel.core.property.State
 import io.reactivex.rxjava3.core.Observable
@@ -29,5 +30,13 @@ interface RvmComponent {
     val <T : Any> Event<T>.consumer: Consumer<T> get() = this.consumer
 
     val <T : Any> Event<T>.observable: Observable<T> get() = this.observable
+
+    fun <T : Any> ConfirmationEvent<T>.call(value: T) = this.consumer.accept(value)
+
+    fun ConfirmationEvent<Unit>.call() = this.consumer.accept(Unit)
+
+    val <T : Any> ConfirmationEvent<T>.consumer: Consumer<T> get() = this.consumer
+
+    val <T : Any> ConfirmationEvent<T>.observable: Observable<T> get() = this.observable
 
 }
