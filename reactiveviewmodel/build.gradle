@@ -44,7 +44,7 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
                 groupId = 'com.alexdeww.reactiveviewmodel'
-                version = '2.4.1'
+                version = '2.4.2'
             }
         }
     }
