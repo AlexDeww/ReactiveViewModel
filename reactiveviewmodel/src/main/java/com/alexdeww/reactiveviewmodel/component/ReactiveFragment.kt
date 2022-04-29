@@ -1,12 +1,15 @@
 package com.alexdeww.reactiveviewmodel.component
 
 import androidx.annotation.CallSuper
+import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import io.reactivex.rxjava3.disposables.Disposable
 
-abstract class ReactiveFragment : Fragment(), RvmViewComponent {
+abstract class ReactiveFragment : Fragment, RvmViewComponent {
+
+    constructor(@LayoutRes layoutId: Int) : super(layoutId)
 
     private val disposableOnDestroyList = HashMap<String, Disposable>()
     private val disposableOnStopList = HashMap<String, Disposable>()
