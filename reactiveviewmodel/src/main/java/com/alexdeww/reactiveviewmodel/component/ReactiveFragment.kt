@@ -9,6 +9,8 @@ import io.reactivex.rxjava3.disposables.Disposable
 
 abstract class ReactiveFragment : Fragment, RvmViewComponent {
 
+    constructor() : super()
+
     constructor(@LayoutRes layoutId: Int) : super(layoutId)
 
     private val disposableOnDestroyList = HashMap<String, Disposable>()
