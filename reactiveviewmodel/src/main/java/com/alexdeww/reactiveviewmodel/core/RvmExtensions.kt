@@ -11,6 +11,7 @@ import com.alexdeww.reactiveviewmodel.core.property.State
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.functions.Function
+import java.util.concurrent.atomic.AtomicBoolean
 
 typealias OnLiveDataAction<T> = (data: T) -> Unit
 
@@ -70,10 +71,65 @@ fun Completable.bindProgress(progressConsumer: Consumer<Boolean>): Completable =
     .doOnSubscribe { progressConsumer.accept(true) }
     .doFinally { progressConsumer.accept(false) }
 
-fun <T : Any> Single<T>.bindProgressAny(progressConsumer: Consumer<Boolean>): Single<T> = this
-    .doOnSubscribe { progressConsumer.accept(true) }
-    .doOnSuccess { progressConsumer.accept(false) }
-    .doOnError { progressConsumer.accept(false) }
+private open class FinallyConsumerWrapper<T : Any>(
+    private val consumer: Consumer<T>
+) {
+    private val isFinally = AtomicBoolean(false)
+
+    fun reset(value: T) {
+        isFinally.set(false)
+        consumer.accept(value)
+    }
+
+    fun finally(value: T) {
+        if (isFinally.compareAndSet(false, true)) consumer.accept(value)
+    }
+}
+
+private class ProgressConsumerWrapper(
+    consumer: Consumer<Boolean>
+) : FinallyConsumerWrapper<Boolean>(consumer) {
+    fun begin() = reset(true)
+    fun end() = finally(false)
+}
+
+fun <T : Any> Observable<T>.bindProgressAny(progressConsumer: Consumer<Boolean>): Observable<T> {
+    val consumerWrapper = ProgressConsumerWrapper(progressConsumer)
+    return this
+        .doOnSubscribe { consumerWrapper.begin() }
+        .doOnNext { consumerWrapper.end() }
+        .doOnComplete { consumerWrapper.end() }
+        .doOnError { consumerWrapper.end() }
+        .doOnDispose { consumerWrapper.end() }
+}
+
+fun <T : Any> Single<T>.bindProgressAny(progressConsumer: Consumer<Boolean>): Single<T> {
+    val consumerWrapper = ProgressConsumerWrapper(progressConsumer)
+    return this
+        .doOnSubscribe { consumerWrapper.begin() }
+        .doOnSuccess { consumerWrapper.end() }
+        .doOnError { consumerWrapper.end() }
+        .doOnDispose { consumerWrapper.end() }
+}
+
+fun <T : Any> Maybe<T>.bindProgressAny(progressConsumer: Consumer<Boolean>): Maybe<T> {
+    val consumerWrapper = ProgressConsumerWrapper(progressConsumer)
+    return this
+        .doOnSubscribe { consumerWrapper.begin() }
+        .doOnSuccess { consumerWrapper.end() }
+        .doOnComplete { consumerWrapper.end() }
+        .doOnError { consumerWrapper.end() }
+        .doOnDispose { consumerWrapper.end() }
+}
+
+fun Completable.bindProgressAny(progressConsumer: Consumer<Boolean>): Completable {
+    val consumerWrapper = ProgressConsumerWrapper(progressConsumer)
+    return this
+        .doOnSubscribe { consumerWrapper.begin() }
+        .doOnComplete { consumerWrapper.end() }
+        .doOnError { consumerWrapper.end() }
+        .doOnDispose { consumerWrapper.end() }
+}
 
 /**
  * Returns the [Observable] that emits items when active, and buffers them when [idle][isIdle].
@@ -86,7 +142,7 @@ fun <T : Any> Observable<T>.bufferWhileIdle(
     bufferSize: Int? = null
 ): Observable<T> {
     val itemsObservable = this
-        .withLatestFrom(isIdle, { t: T, idle: Boolean -> t to idle })
+        .withLatestFrom(isIdle) { t: T, idle: Boolean -> t to idle }
         .publish()
         .refCount(2)
 
