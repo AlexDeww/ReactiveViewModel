@@ -11,6 +11,7 @@ import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 /**
  * Based on RxPM
@@ -24,6 +25,7 @@ abstract class ReactiveViewModel : ViewModel(), RvmComponent {
 
     protected interface Invocable<T> {
         val isExecute: Boolean
+        val isExecuteObservable: Observable<Boolean>
         operator fun invoke(params: T)
     }
 
@@ -103,13 +105,15 @@ abstract class ReactiveViewModel : ViewModel(), RvmComponent {
         block: (params: T) -> Completable
     ): Lazy<Invocable<T>> = lazy {
         val action = action<T>()
-        var isExecute = false
+        val isExecuteSubj: BehaviorSubject<Boolean> = BehaviorSubject.createDefault(false)
         action.bind {
-            this.switchMapCompletable { params -> block(params).bindProgress { isExecute = it } }
+            this.switchMapCompletable { params -> block(params).bindProgress(isExecuteSubj::onNext) }
                 .toObservable<Unit>()
         }
         object : Invocable<T> {
-            override val isExecute: Boolean get() = isExecute
+            override val isExecute: Boolean get() = isExecuteSubj.value ?: false
+            override val isExecuteObservable: Observable<Boolean> = isExecuteSubj.serialize()
+
             override fun invoke(params: T) = action.consumer.accept(params)
         }
     }
