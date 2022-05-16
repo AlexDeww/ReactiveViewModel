@@ -1,15 +1,22 @@
 package com.alexdeww.reactiveviewmodel.widget
 
+import android.os.Parcelable
 import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
+import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 
 class DisplayableControl<T : Any> internal constructor(
     debounceInterval: Long? = null
 ) : BaseControl() {
 
-    sealed class Action<out T : Any> {
+    sealed class Action<out T : Any> : Parcelable {
+
+        @Parcelize
         object Hide : Action<Nothing>()
-        data class Show<T : Any>(val data: T) : Action<T>()
+
+        @Parcelize
+        data class Show<T : Any>(val data: @RawValue T) : Action<T>()
 
         val isShowing: Boolean get() = this is Show
         fun getShowingValue(): T? = (this as? Show<T>)?.data

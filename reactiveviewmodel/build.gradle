@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-parcelize'
 apply plugin: 'maven-publish'
 
 android {
@@ -44,7 +45,7 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
                 groupId = 'com.alexdeww.reactiveviewmodel'
-                version = '2.4.7'
+                version = '2.4.8'
             }
         }
     }

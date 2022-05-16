@@ -2,10 +2,7 @@ package com.alexdeww.reactiveviewmodel.core
 
 import androidx.lifecycle.SavedStateHandle
 import com.alexdeww.reactiveviewmodel.core.property.State
-import com.alexdeww.reactiveviewmodel.widget.BaseVisualControl
-import com.alexdeww.reactiveviewmodel.widget.FormatterAction
-import com.alexdeww.reactiveviewmodel.widget.InputControl
-import com.alexdeww.reactiveviewmodel.widget.RatingControl
+import com.alexdeww.reactiveviewmodel.widget.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -97,6 +94,21 @@ fun SavedStateHandle.ratingControl(
     }
     control
 }
+
+fun <T : Any> SavedStateHandle.displayableControl(
+    debounceInterval: Long? = null
+): ReadOnlyProperty<ReactiveViewModel, DisplayableControl<T>> =
+    delegate { thisRef, stateHandle, key ->
+        val actionKey = "$key.action"
+        val control = DisplayableControl<T>(debounceInterval)
+        thisRef.run {
+            control.action.setValue(stateHandle[actionKey] ?: DisplayableControl.Action.Hide)
+            control.action.viewFlowable
+                .subscribe { stateHandle[actionKey] = it }
+                .disposeOnCleared()
+        }
+        control
+    }
 
 @PublishedApi
 internal class SavedStateProperty<T>(
