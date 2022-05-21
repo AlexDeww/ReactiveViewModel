@@ -1,5 +1,6 @@
 package com.alexdeww.reactiveviewmodel.core
 
+import android.app.Dialog
 import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.RatingBar
@@ -63,10 +64,10 @@ interface RvmViewComponent {
     )
 
     fun <T : Any, R : Any> DialogControl<T, R>.bindTo(
-        createDialog: ActionCreateDialog<T, R>
+        dialogFactory: DialogFactory<T, R, Dialog>
     ) = bindTo(
         rvmViewComponent = this@RvmViewComponent,
-        createDialog = createDialog
+        dialogFactory = dialogFactory
     )
 
     fun InputControl.bindTo(
