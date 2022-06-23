@@ -64,10 +64,10 @@ interface RvmViewComponent {
     )
 
     fun <T : Any, R : Any> DialogControl<T, R>.bindTo(
-        dialogFactory: DialogFactory<T, R, Dialog>
+        dialogCreator: DialogCreator<T, R, Dialog>
     ) = bindTo(
         rvmViewComponent = this@RvmViewComponent,
-        dialogFactory = dialogFactory
+        dialogCreator = dialogCreator
     )
 
     fun InputControl.bindTo(

@@ -1,9 +1,7 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.app.Dialog
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import io.reactivex.rxjava3.core.Maybe
 
@@ -72,82 +70,84 @@ fun <T : Any, R : Any> dialogControl(): DialogControl<T, R> = DialogControl()
 
 fun <T : Any> dialogControlWithResult(): DialogControl<T, DialogResult> = DialogControl()
 
-fun interface DialogFactory<in T : Any, R : Any, out D : Any> {
-    fun createDialog(data: T, dc: DialogControlResult<R>): D
+typealias DialogCreator<T, R, D> = (data: T, dc: DialogControlResult<R>) -> D
+
+interface DialogHandlerListener<D> {
+
+    fun onSetupOnDismiss(dialog: D, dismissAction: () -> Unit)
+
+    fun onShowDialog(dialog: D)
+
+    fun onCloseDialog(dialog: D)
+
+    fun onDialogUnbind(dialog: D) {
+        onCloseDialog(dialog)
+    }
+
 }
 
 fun <T : Any, R : Any, D : Any> DialogControl<T, R>.bindToEx(
     rvmViewComponent: RvmViewComponent,
-    dialogFactory: DialogFactory<T, R, D>,
-    dialogLiveDataProvider: (control: DialogControl<T, R>, dialogFactory: DialogFactory<T, R, D>) -> DialogLiveDataMediator<T, R, D>
+    dialogCreator: DialogCreator<T, R, D>,
+    dialogHandlerListener: DialogHandlerListener<D>
 ) {
-    val liveData = dialogLiveDataProvider(this, dialogFactory)
+    val liveData = DialogLiveDataMediator(this, dialogCreator, dialogHandlerListener)
     rvmViewComponent.run { liveData.observe { /* empty */ } }
 }
 
 fun <T : Any, R : Any> DialogControl<T, R>.bindTo(
     rvmViewComponent: RvmViewComponent,
-    dialogFactory: DialogFactory<T, R, Dialog>
-) = bindToEx(rvmViewComponent, dialogFactory, ::DialogLiveDataMediatorDialog)
+    dialogCreator: DialogCreator<T, R, Dialog>
+) = bindToEx(rvmViewComponent, dialogCreator, OrdinaryDialogHandlerListener())
 
-abstract class DialogLiveDataMediator<T : Any, R : Any, D : Any>(
-    control: DialogControl<T, R>,
-    dialogFactory: DialogFactory<T, R, D>
-) : MediatorLiveData<DialogControl.Display<T>>() {
+private class DialogLiveDataMediator<T : Any, R : Any, D : Any>(
+    private val control: DialogControl<T, R>,
+    private val dialogCreator: DialogCreator<T, R, D>,
+    private val dialogHandlerListener: DialogHandlerListener<D>
+) : MediatorLiveData<DialogControl.Display<T>>(),
+    DialogHandlerListener<D> by dialogHandlerListener {
 
     private var dialog: D? = null
 
-    init {
+    override fun onActive() {
+        super.onActive()
         addSource(control.displayed.liveData) { displayData ->
             value = displayData
             when (displayData) {
                 is DialogControl.Display.Displayed -> {
-                    dialog = dialogFactory
-                        .createDialog(
-                            data = displayData.data,
-                            dc = DialogControlResult(control)
-                        ).also {
-                            setupOnDismiss(it) { control.dismiss() }
-                            showDialog(it)
-                        }
+                    dialog = dialogCreator(displayData.data, DialogControlResult(control)).also {
+                        onSetupOnDismiss(it) { control.dismiss() }
+                        onShowDialog(it)
+                    }
                 }
-                DialogControl.Display.Absent -> closeDialog()
+                DialogControl.Display.Absent -> {
+                    dialog?.let { onCloseDialog(it) }
+                    releaseDialog()
+                }
             }
         }
     }
 
-    final override fun <S : Any?> addSource(source: LiveData<S>, onChanged: Observer<in S>) {
-        super.addSource(source, onChanged)
+    override fun onInactive() {
+        super.onInactive()
+        removeSource(control.displayed.liveData)
+        dialog?.let { onDialogUnbind(it) }
+        releaseDialog()
     }
 
-    final override fun removeObserver(observer: Observer<in DialogControl.Display<T>>) {
-        super.removeObserver(observer)
-        closeDialog()
-    }
-
-    protected abstract fun setupOnDismiss(dialog: D, dismissAction: () -> Unit)
-
-    protected abstract fun showDialog(dialog: D)
-
-    protected abstract fun onCloseDialog(dialog: D)
-
-    private fun closeDialog() {
-        dialog?.let { onCloseDialog(it) }
+    private fun releaseDialog() {
         dialog = null
     }
 
 }
 
-private class DialogLiveDataMediatorDialog<T : Any, R : Any>(
-    control: DialogControl<T, R>,
-    dialogFactory: DialogFactory<T, R, Dialog>
-) : DialogLiveDataMediator<T, R, Dialog>(control, dialogFactory) {
+private class OrdinaryDialogHandlerListener : DialogHandlerListener<Dialog> {
 
-    override fun setupOnDismiss(dialog: Dialog, dismissAction: () -> Unit) {
+    override fun onSetupOnDismiss(dialog: Dialog, dismissAction: () -> Unit) {
         dialog.setOnDismissListener { dismissAction() }
     }
 
-    override fun showDialog(dialog: Dialog) {
+    override fun onShowDialog(dialog: Dialog) {
         dialog.show()
     }
 
