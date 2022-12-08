@@ -1,6 +1,7 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.text.*
+import android.view.View
 import android.widget.EditText
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import com.google.android.material.textfield.TextInputLayout
@@ -50,6 +51,7 @@ fun InputControl.bindTo(
     bindVisible: Boolean = true
 ) = bindTo(
     rvmViewComponent = rvmViewComponent,
+    view = editText,
     editText = editText,
     actionOnError = { editText.error = it },
     bindError = bindError,
@@ -65,6 +67,7 @@ fun InputControl.bindTo(
     bindVisible: Boolean = true
 ) = bindTo(
     rvmViewComponent = rvmViewComponent,
+    view = textInputLayout,
     editText = textInputLayout.editText!!,
     actionOnError = { textInputLayout.error = it },
     bindError = bindError,
@@ -74,6 +77,7 @@ fun InputControl.bindTo(
 
 internal fun InputControl.bindTo(
     rvmViewComponent: RvmViewComponent,
+    view: View,
     editText: EditText,
     actionOnError: (String) -> Unit,
     bindError: Boolean = false,
@@ -83,7 +87,7 @@ internal fun InputControl.bindTo(
     var textWatcher: TextWatcher? = null
     baseBindTo(
         rvmViewComponent = rvmViewComponent,
-        view = editText,
+        view = view,
         bindEnable = bindEnable,
         bindVisible = bindVisible,
         onValueChanged = { newValue ->

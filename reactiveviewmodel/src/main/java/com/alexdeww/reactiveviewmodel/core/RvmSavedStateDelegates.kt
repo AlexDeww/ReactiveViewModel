@@ -110,6 +110,33 @@ fun <T : Any> SavedStateHandle.displayableControl(
         control
     }
 
+fun SavedStateHandle.checkControl(
+    initialChecked: Boolean = false,
+    initialEnabled: Boolean = true,
+    initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
+): ReadOnlyProperty<ReactiveViewModel, CheckControl> = delegate { thisRef, stateHandle, key ->
+    val checkedKey = "$key.checked"
+    val enabledKey = "$key.enabled"
+    val visibilityKey = "$key.visibility"
+    val control = CheckControl(
+        initialChecked = stateHandle[checkedKey] ?: initialChecked,
+        initialEnabled = stateHandle[enabledKey] ?: initialEnabled,
+        initialVisibility = stateHandle[visibilityKey] ?: initialVisibility
+    )
+    thisRef.run {
+        control.value.viewFlowable
+            .subscribe { stateHandle[checkedKey] = it }
+            .disposeOnCleared()
+        control.enabled.viewFlowable
+            .subscribe { stateHandle[enabledKey] = it }
+            .disposeOnCleared()
+        control.visibility.viewFlowable
+            .subscribe { stateHandle[visibilityKey] = it }
+            .disposeOnCleared()
+    }
+    control
+}
+
 @PublishedApi
 internal class SavedStateProperty<T>(
     private val savedStateHandle: SavedStateHandle,
