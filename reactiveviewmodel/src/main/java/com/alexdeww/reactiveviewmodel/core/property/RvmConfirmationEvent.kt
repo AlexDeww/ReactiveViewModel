@@ -6,12 +6,12 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
-import com.alexdeww.reactiveviewmodel.core.property.ConfirmationEvent.ObserverWrapper
+import com.alexdeww.reactiveviewmodel.core.property.RvmConfirmationEvent.ObserverWrapper
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Consumer
 
-class ConfirmationEvent<T : Any> internal constructor(debounceInterval: Long? = null) {
+class RvmConfirmationEvent<T : Any> internal constructor(debounceInterval: Long? = null) {
 
     private sealed class EventType {
         data class Pending(val data: Any) : EventType()
@@ -21,7 +21,7 @@ class ConfirmationEvent<T : Any> internal constructor(debounceInterval: Long? = 
         fun <T> tryGetData(): T? = if (this is Pending) data as T else null
     }
 
-    private val eventState = State<EventType>(EventType.Confirmed, debounceInterval)
+    private val eventState = RvmState<EventType>(EventType.Confirmed, debounceInterval)
 
     internal val consumer: Consumer<T> = Consumer {
         eventState.consumer.accept(EventType.Pending(it))
@@ -42,7 +42,7 @@ class ConfirmationEvent<T : Any> internal constructor(debounceInterval: Long? = 
 
     private inner class ConfirmationEventLiveData : MediatorLiveData<T>() {
 
-        private val observers = ArraySet<ConfirmationEvent.ObserverWrapper<T>>()
+        private val observers = ArraySet<RvmConfirmationEvent.ObserverWrapper<T>>()
 
         @MainThread
         override fun observe(owner: LifecycleOwner, observer: Observer<in T>) {

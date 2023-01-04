@@ -4,6 +4,8 @@ import android.view.View
 import androidx.annotation.CallSuper
 import androidx.lifecycle.MediatorLiveData
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
+import com.alexdeww.reactiveviewmodel.core.action
+import com.alexdeww.reactiveviewmodel.core.state
 import io.reactivex.rxjava3.functions.Consumer
 import java.lang.ref.WeakReference
 
@@ -19,11 +21,11 @@ abstract class BaseVisualControl<T : Any>(
         GONE(View.GONE)
     }
 
-    val value = state(initialValue)
-    val enabled = state(initialEnabled)
-    val visibility = state(initialVisibility)
+    val value by state(initialValue)
+    val enabled by state(initialEnabled)
+    val visibility by state(initialVisibility)
 
-    val actionChangeValue = action<T>()
+    val actionChangeValue by action<T>()
 
     init {
         actionChangeValue.observable

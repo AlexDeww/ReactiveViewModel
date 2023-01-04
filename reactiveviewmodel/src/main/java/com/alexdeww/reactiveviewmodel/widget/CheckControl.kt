@@ -1,24 +1,34 @@
 package com.alexdeww.reactiveviewmodel.widget
 
-import android.annotation.SuppressLint
 import android.widget.CompoundButton
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
+import com.alexdeww.reactiveviewmodel.core.RvmWidgetsSupport
+import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
+import com.alexdeww.reactiveviewmodel.core.property.RvmPropertyReadOnlyDelegate
+import kotlin.properties.ReadOnlyProperty
 
-@SuppressLint("CheckResult")
 class CheckControl internal constructor(
     initialChecked: Boolean,
     initialEnabled: Boolean,
     initialVisibility: Visibility
-) : BaseVisualControl<Boolean>(initialChecked, initialEnabled, initialVisibility)
+) : BaseVisualControl<Boolean>(
+    initialChecked,
+    initialEnabled,
+    initialVisibility
+)
 
-fun checkControl(
+@Suppress("unused")
+@RvmDslMarker
+fun RvmWidgetsSupport.checkControl(
     initialChecked: Boolean = false,
     initialEnabled: Boolean = true,
     initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): CheckControl = CheckControl(
-    initialChecked = initialChecked,
-    initialEnabled = initialEnabled,
-    initialVisibility = initialVisibility
+): ReadOnlyProperty<Any?, CheckControl> = RvmPropertyReadOnlyDelegate(
+    property = CheckControl(
+        initialChecked = initialChecked,
+        initialEnabled = initialEnabled,
+        initialVisibility = initialVisibility
+    )
 )
 
 fun CheckControl.bindTo(

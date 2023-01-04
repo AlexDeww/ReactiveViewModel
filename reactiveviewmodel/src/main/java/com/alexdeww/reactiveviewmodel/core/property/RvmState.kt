@@ -7,7 +7,7 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 
-class State<T : Any> internal constructor(
+class RvmState<T : Any> internal constructor(
     initValue: T? = null,
     debounceInterval: Long? = null
 ) {

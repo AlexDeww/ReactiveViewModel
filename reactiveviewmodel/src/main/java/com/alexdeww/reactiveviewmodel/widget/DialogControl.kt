@@ -3,6 +3,8 @@ package com.alexdeww.reactiveviewmodel.widget
 import android.app.Dialog
 import androidx.lifecycle.MediatorLiveData
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
+import com.alexdeww.reactiveviewmodel.core.action
+import com.alexdeww.reactiveviewmodel.core.state
 import io.reactivex.rxjava3.core.Maybe
 
 sealed class DialogResult {
@@ -17,9 +19,9 @@ class DialogControl<T : Any, R : Any> internal constructor() : BaseControl() {
         object Absent : Display<Nothing>()
     }
 
-    internal val result = action<R>()
+    internal val result by action<R>()
 
-    val displayed = state<Display<T>>(Display.Absent)
+    val displayed by state<Display<T>>(Display.Absent)
     val isShowing get() = displayed.value is Display.Displayed
 
     fun show(data: T) {

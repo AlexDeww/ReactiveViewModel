@@ -1,7 +1,8 @@
 package com.alexdeww.reactiveviewmodel.core
 
 import androidx.lifecycle.SavedStateHandle
-import com.alexdeww.reactiveviewmodel.core.property.State
+import com.alexdeww.reactiveviewmodel.component.ReactiveViewModel
+import com.alexdeww.reactiveviewmodel.core.property.RvmState
 import com.alexdeww.reactiveviewmodel.widget.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
@@ -27,9 +28,9 @@ fun <T : Any> SavedStateHandle.valueNonNull(
 fun <T : Any> SavedStateHandle.state(
     initialValue: T? = null,
     debounceInterval: Long? = null
-): ReadOnlyProperty<ReactiveViewModel, State<T>> = delegate { thisRef, stateHandle, key ->
-    val state = State(stateHandle[key] ?: initialValue, debounceInterval)
-    thisRef.run { state.viewFlowable.subscribe { stateHandle[key] = it }.disposeOnCleared() }
+): ReadOnlyProperty<ReactiveViewModel, RvmState<T>> = delegate { thisRef, stateHandle, key ->
+    val state = RvmState(stateHandle[key] ?: initialValue, debounceInterval)
+    thisRef.run { state.viewFlowable.subscribe { stateHandle[key] = it }.autoDispose() }
     state
 }
 
@@ -54,16 +55,16 @@ fun SavedStateHandle.inputControl(
     thisRef.run {
         control.value.viewFlowable
             .subscribe { stateHandle[textKey] = it }
-            .disposeOnCleared()
+            .autoDispose()
         control.error.viewFlowable
             .subscribe { stateHandle[errorKey] = it }
-            .disposeOnCleared()
+            .autoDispose()
         control.enabled.viewFlowable
             .subscribe { stateHandle[enabledKey] = it }
-            .disposeOnCleared()
+            .autoDispose()
         control.visibility.viewFlowable
             .subscribe { stateHandle[visibilityKey] = it }
-            .disposeOnCleared()
+            .autoDispose()
     }
     control
 }
@@ -84,13 +85,13 @@ fun SavedStateHandle.ratingControl(
     thisRef.run {
         control.value.viewFlowable
             .subscribe { stateHandle[ratingKey] = it }
-            .disposeOnCleared()
+            .autoDispose()
         control.enabled.viewFlowable
             .subscribe { stateHandle[enabledKey] = it }
-            .disposeOnCleared()
+            .autoDispose()
         control.visibility.viewFlowable
             .subscribe { stateHandle[visibilityKey] = it }
-            .disposeOnCleared()
+            .autoDispose()
     }
     control
 }
@@ -105,7 +106,7 @@ fun <T : Any> SavedStateHandle.displayableControl(
             control.action.setValue(stateHandle[actionKey] ?: DisplayableControl.Action.Hide)
             control.action.viewFlowable
                 .subscribe { stateHandle[actionKey] = it }
-                .disposeOnCleared()
+                .autoDispose()
         }
         control
     }
@@ -126,13 +127,13 @@ fun SavedStateHandle.checkControl(
     thisRef.run {
         control.value.viewFlowable
             .subscribe { stateHandle[checkedKey] = it }
-            .disposeOnCleared()
+            .autoDispose()
         control.enabled.viewFlowable
             .subscribe { stateHandle[enabledKey] = it }
-            .disposeOnCleared()
+            .autoDispose()
         control.visibility.viewFlowable
             .subscribe { stateHandle[visibilityKey] = it }
-            .disposeOnCleared()
+            .autoDispose()
     }
     control
 }

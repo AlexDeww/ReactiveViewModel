@@ -3,6 +3,7 @@ package com.alexdeww.reactiveviewmodel.widget
 import android.os.Parcelable
 import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
+import com.alexdeww.reactiveviewmodel.core.state
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 
@@ -22,7 +23,7 @@ class DisplayableControl<T : Any> internal constructor(
         fun getShowingValue(): T? = (this as? Show<T>)?.data
     }
 
-    val action = state<Action<T>>(Action.Hide, debounceInterval)
+    val action by state<Action<T>>(Action.Hide, debounceInterval)
     val isShowing get() = action.value?.isShowing ?: false
     val showingValue: T? get() = action.value?.getShowingValue()
 

@@ -4,6 +4,7 @@ import android.text.*
 import android.view.View
 import android.widget.EditText
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
+import com.alexdeww.reactiveviewmodel.core.state
 import com.google.android.material.textfield.TextInputLayout
 
 typealias FormatterAction = (text: String) -> String
@@ -20,7 +21,7 @@ class InputControl internal constructor(
         value.valueChangesHook = formatter
     }
 
-    val error = state<String>()
+    val error by state<String>()
 
     override fun onChangedValue(newValue: String) {
         if (hideErrorOnUserInput) error.consumer.accept("")

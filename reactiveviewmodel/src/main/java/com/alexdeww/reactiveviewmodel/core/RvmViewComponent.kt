@@ -7,34 +7,42 @@ import android.widget.RatingBar
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import com.alexdeww.reactiveviewmodel.core.property.ConfirmationEvent
-import com.alexdeww.reactiveviewmodel.core.property.Event
-import com.alexdeww.reactiveviewmodel.core.property.State
+import com.alexdeww.reactiveviewmodel.core.RvmAutoDisposableSupport.StoreKey
+import com.alexdeww.reactiveviewmodel.core.property.RvmConfirmationEvent
+import com.alexdeww.reactiveviewmodel.core.property.RvmEvent
+import com.alexdeww.reactiveviewmodel.core.property.RvmState
 import com.alexdeww.reactiveviewmodel.widget.*
 import com.google.android.material.textfield.TextInputLayout
 import io.reactivex.rxjava3.disposables.Disposable
 
-interface RvmViewComponent {
+interface RvmViewComponent : RvmAutoDisposableSupport {
+
+    companion object {
+        val onStopStoreKey = StoreKey("RvmViewComponent.onStopStoreKey")
+        val onDestroyViewStoreKey = StoreKey("RvmViewComponent.onDestroyViewStoreKey")
+    }
 
     val componentLifecycleOwner: LifecycleOwner
 
-    fun Disposable.disposeOnDestroy(tag: String)
+    fun Disposable.disposeOnStop(tag: String) = autoDispose(tag, onStopStoreKey)
+    fun Disposable.disposeOnDestroyView(tag: String) = autoDispose(tag, onDestroyViewStoreKey)
+    fun Disposable.disposeOnDestroy(tag: String) = autoDispose(tag)
 
-    fun Disposable.disposeOnStop(tag: String)
+    fun <T> LiveData<T>.observe(
+        action: OnLiveDataAction<T>
+    ): Observer<T> = observe(owner = componentLifecycleOwner, action = action)
 
-    fun Disposable.disposeOnDestroyView(tag: String)
+    fun <T : Any> RvmState<T>.observe(
+        action: OnLiveDataAction<T>
+    ): Observer<T> = observe(componentLifecycleOwner, action)
 
-    fun <T> LiveData<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
-        observe(owner = componentLifecycleOwner, action = action)
+    fun <T : Any> RvmEvent<T>.observe(
+        action: OnLiveDataAction<T>
+    ): Observer<T> = observe(componentLifecycleOwner, action)
 
-    fun <T : Any> State<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
-        observe(componentLifecycleOwner, action)
-
-    fun <T : Any> Event<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
-        observe(componentLifecycleOwner, action)
-
-    fun <T : Any> ConfirmationEvent<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
-        observe(componentLifecycleOwner, action)
+    fun <T : Any> RvmConfirmationEvent<T>.observe(
+        action: OnLiveDataAction<T>
+    ): Observer<T> = observe(componentLifecycleOwner, action)
 
     fun <T : Any> DisplayableControl<T>.observe(
         action: DisplayableAction<T>
