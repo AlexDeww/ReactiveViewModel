@@ -26,6 +26,7 @@ class DisplayableControl<T : Any> internal constructor(
 
         val isShowing: Boolean get() = this is Show
         fun getShowingValue(): T? = (this as? Show<T>)?.data
+
     }
 
     val action by state<Action<T>>(Action.Hide, debounceInterval)

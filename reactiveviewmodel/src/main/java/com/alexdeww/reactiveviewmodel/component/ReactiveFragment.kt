@@ -7,10 +7,11 @@ import androidx.lifecycle.LifecycleOwner
 import com.alexdeww.reactiveviewmodel.core.DefaultRvmDisposableStore
 import com.alexdeww.reactiveviewmodel.core.RvmAutoDisposableStore
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
+import com.alexdeww.reactiveviewmodel.widget.RvmWidgetBindShortcut
 
 abstract class ReactiveFragment(
     @LayoutRes layoutId: Int = 0
-) : Fragment(layoutId), RvmViewComponent,
+) : Fragment(layoutId), RvmViewComponent, RvmWidgetBindShortcut,
     RvmAutoDisposableStore by DefaultRvmDisposableStore() {
 
     override val componentLifecycleOwner: LifecycleOwner get() = viewLifecycleOwner

@@ -6,9 +6,10 @@ import androidx.lifecycle.LifecycleOwner
 import com.alexdeww.reactiveviewmodel.core.DefaultRvmDisposableStore
 import com.alexdeww.reactiveviewmodel.core.RvmAutoDisposableStore
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
+import com.alexdeww.reactiveviewmodel.widget.RvmWidgetBindShortcut
 import io.reactivex.rxjava3.disposables.Disposable
 
-abstract class ReactiveActivity : AppCompatActivity(), RvmViewComponent,
+abstract class ReactiveActivity : AppCompatActivity(), RvmViewComponent, RvmWidgetBindShortcut,
     RvmAutoDisposableStore by DefaultRvmDisposableStore() {
 
     override val componentLifecycleOwner: LifecycleOwner get() = this

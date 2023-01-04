@@ -8,7 +8,8 @@ import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 
-interface RvmViewModelComponent : RvmComponentsSupport, RvmWidgetsSupport,
+@RvmBinderDslMarker
+interface RvmViewModelComponent : RvmPropertiesSupport, RvmWidgetsSupport,
     RvmAutoDisposableSupport {
 
     interface Invocable<T> {
@@ -73,4 +74,3 @@ internal fun <T : Any> RvmViewModelComponent.bindState(
         .subscribe()
         .autoDispose()
 }
-

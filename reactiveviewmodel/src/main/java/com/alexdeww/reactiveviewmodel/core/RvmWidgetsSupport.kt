@@ -1,3 +1,3 @@
 package com.alexdeww.reactiveviewmodel.core
 
-interface RvmWidgetsSupport : RvmComponentsSupport
+interface RvmWidgetsSupport : RvmPropertiesSupport

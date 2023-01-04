@@ -1,6 +1,5 @@
 package com.alexdeww.reactiveviewmodel.core
 
-import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
 import com.alexdeww.reactiveviewmodel.core.property.RvmAction
 import com.alexdeww.reactiveviewmodel.core.property.RvmConfirmationEvent
@@ -13,8 +12,7 @@ import java.util.*
 import kotlin.properties.ReadOnlyProperty
 
 @RvmDslMarker
-@RvmBinderDslMarker
-interface RvmComponentsSupport {
+interface RvmPropertiesSupport {
 
     // State
     val <T : Any> RvmState<T>.consumer: Consumer<T> get() = this.consumer
@@ -46,83 +44,83 @@ interface RvmComponentsSupport {
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any> RvmComponentsSupport.state(
+fun <T : Any> RvmPropertiesSupport.state(
     initValue: T? = null,
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmComponentsSupport, RvmState<T>> = RvmPropertyReadOnlyDelegate(
+): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>> = RvmPropertyReadOnlyDelegate(
     property = RvmState(initValue, debounceInterval)
 )
 
 @Suppress("unused")
 @RvmDslMarker
-fun RvmComponentsSupport.progressState(
+fun RvmPropertiesSupport.progressState(
     initValue: Boolean? = null,
     debounceInterval: Long = DEF_PROGRESS_DEBOUNCE_INTERVAL
-): ReadOnlyProperty<RvmComponentsSupport, RvmState<Boolean>> = state(
+): ReadOnlyProperty<RvmPropertiesSupport, RvmState<Boolean>> = state(
     initValue = initValue,
     debounceInterval = debounceInterval
 )
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any> RvmComponentsSupport.event(
+fun <T : Any> RvmPropertiesSupport.event(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmComponentsSupport, RvmEvent<T>> = RvmPropertyReadOnlyDelegate(
+): ReadOnlyProperty<RvmPropertiesSupport, RvmEvent<T>> = RvmPropertyReadOnlyDelegate(
     property = RvmEvent(debounceInterval)
 )
 
 @Suppress("unused")
 @RvmDslMarker
-fun RvmComponentsSupport.eventNone(
+fun RvmPropertiesSupport.eventNone(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmComponentsSupport, RvmEvent<Unit>> = event(
+): ReadOnlyProperty<RvmPropertiesSupport, RvmEvent<Unit>> = event(
     debounceInterval = debounceInterval
 )
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any> RvmComponentsSupport.confirmationEvent(
+fun <T : Any> RvmPropertiesSupport.confirmationEvent(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmComponentsSupport, RvmConfirmationEvent<T>> = RvmPropertyReadOnlyDelegate(
+): ReadOnlyProperty<RvmPropertiesSupport, RvmConfirmationEvent<T>> = RvmPropertyReadOnlyDelegate(
     property = RvmConfirmationEvent(debounceInterval)
 )
 
 @Suppress("unused")
 @RvmDslMarker
-fun RvmComponentsSupport.confirmationEventNone(
+fun RvmPropertiesSupport.confirmationEventNone(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmComponentsSupport, RvmConfirmationEvent<Unit>> = confirmationEvent(
+): ReadOnlyProperty<RvmPropertiesSupport, RvmConfirmationEvent<Unit>> = confirmationEvent(
     debounceInterval = debounceInterval
 )
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any> RvmComponentsSupport.action(
+fun <T : Any> RvmPropertiesSupport.action(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmComponentsSupport, RvmAction<T>> = RvmPropertyReadOnlyDelegate(
+): ReadOnlyProperty<RvmPropertiesSupport, RvmAction<T>> = RvmPropertyReadOnlyDelegate(
     property = RvmAction(debounceInterval)
 )
 
 @Suppress("unused")
 @RvmDslMarker
-fun RvmComponentsSupport.actionNone(
+fun RvmPropertiesSupport.actionNone(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmComponentsSupport, RvmAction<Unit>> = action(
+): ReadOnlyProperty<RvmPropertiesSupport, RvmAction<Unit>> = action(
     debounceInterval = debounceInterval
 )
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any> RvmComponentsSupport.debouncedAction(
+fun <T : Any> RvmPropertiesSupport.debouncedAction(
     debounceInterval: Long = DEF_ACTION_DEBOUNCE_INTERVAL
-): ReadOnlyProperty<RvmComponentsSupport, RvmAction<T>> = action(
+): ReadOnlyProperty<RvmPropertiesSupport, RvmAction<T>> = action(
     debounceInterval = debounceInterval
 )
 
 @Suppress("unused")
 @RvmDslMarker
-fun RvmComponentsSupport.debouncedActionNone(
+fun RvmPropertiesSupport.debouncedActionNone(
     debounceInterval: Long = DEF_ACTION_DEBOUNCE_INTERVAL
-): ReadOnlyProperty<RvmComponentsSupport, RvmAction<Unit>> = action(
+): ReadOnlyProperty<RvmPropertiesSupport, RvmAction<Unit>> = action(
     debounceInterval = debounceInterval
 )
