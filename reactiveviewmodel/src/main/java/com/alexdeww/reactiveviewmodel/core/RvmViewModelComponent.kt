@@ -8,8 +8,6 @@ import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 
-@RvmDslMarker
-@RvmBinderDslMarker
 interface RvmViewModelComponent : RvmComponentsSupport, RvmWidgetsSupport,
     RvmAutoDisposableSupport {
 
@@ -39,7 +37,7 @@ interface RvmViewModelComponent : RvmComponentsSupport, RvmWidgetsSupport,
 fun <T : Any> RvmViewModelComponent.invocable(
     block: (params: T) -> Completable
 ): Lazy<RvmViewModelComponent.Invocable<T>> = lazy {
-    val action by action<T>()
+    val action = RvmAction<T>()
     val isExecuteSubj: BehaviorSubject<Boolean> = BehaviorSubject.createDefault(false)
     action bind {
         this.switchMapCompletable { params -> block(params).bindProgress(isExecuteSubj::onNext) }

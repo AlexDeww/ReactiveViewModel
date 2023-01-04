@@ -1,15 +1,20 @@
 package com.alexdeww.reactiveviewmodel.widget
 
 import android.os.Parcelable
-import androidx.lifecycle.Observer
-import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
-import com.alexdeww.reactiveviewmodel.core.state
+import androidx.lifecycle.SavedStateHandle
+import com.alexdeww.reactiveviewmodel.core.*
+import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
+import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
+import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyReadOnlyDelegate
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
+import kotlin.properties.ReadOnlyProperty
+
+typealias DisplayableAction<T> = (isVisible: Boolean, data: T?) -> Unit
 
 class DisplayableControl<T : Any> internal constructor(
     debounceInterval: Long? = null
-) : BaseControl() {
+) : BaseControl<DisplayableControl<T>.Binder>() {
 
     sealed class Action<out T : Any> : Parcelable {
 
@@ -35,29 +40,59 @@ class DisplayableControl<T : Any> internal constructor(
         action.consumer.accept(Action.Hide)
     }
 
-}
+    override fun getBinder(rvmViewComponent: RvmViewComponent): Binder = Binder(rvmViewComponent)
 
-fun <T : Any> displayableControl(debounceInterval: Long? = null): DisplayableControl<T> =
-    DisplayableControl(debounceInterval)
+    inner class Binder internal constructor(
+        rvmViewComponent: RvmViewComponent
+    ) : ViewBinder(rvmViewComponent) {
 
-typealias DisplayableAction<T> = (isVisible: Boolean, data: T?) -> Unit
-
-fun <T : Any> DisplayableControl<T>.observe(
-    rvmViewComponent: RvmViewComponent,
-    action: DisplayableAction<T>
-): Observer<DisplayableControl.Action<T>> = rvmViewComponent.run {
-    this@observe.action.observe { action.invoke(it.isShowing, it.getShowingValue()) }
-}
-
-fun <T : Any> DisplayableControl<T>.observe(
-    rvmViewComponent: RvmViewComponent,
-    onShow: (T) -> Unit,
-    onHide: () -> Unit
-): Observer<DisplayableControl.Action<T>> = rvmViewComponent.run {
-    this@observe.action.observe {
-        when (it) {
-            is DisplayableControl.Action.Show<T> -> onShow.invoke(it.data)
-            else -> onHide.invoke()
+        @RvmBinderDslMarker
+        fun bind(action: DisplayableAction<T>) {
+            rvmViewComponentRef.get()?.run {
+                this@DisplayableControl.action.observe {
+                    action.invoke(it.isShowing, it.getShowingValue())
+                }
+            }
         }
+
+        @RvmBinderDslMarker
+        fun bind(
+            onShow: (T) -> Unit,
+            onHide: () -> Unit
+        ) {
+            rvmViewComponentRef.get()?.run {
+                this@DisplayableControl.action.observe {
+                    when (it) {
+                        is Action.Show<T> -> onShow.invoke(it.data)
+                        else -> onHide.invoke()
+                    }
+                }
+            }
+        }
+
     }
+
+}
+
+@Suppress("unused")
+@RvmDslMarker
+fun <T : Any> RvmWidgetsSupport.displayableControl(
+    debounceInterval: Long? = null
+): ReadOnlyProperty<RvmWidgetsSupport, DisplayableControl<T>> = RvmPropertyReadOnlyDelegate(
+    property = DisplayableControl(debounceInterval)
+)
+
+@RvmDslMarker
+fun <T : Any> SavedStateHandle.displayableControl(
+    debounceInterval: Long? = null
+): ReadOnlyProperty<RvmViewModelComponent, DisplayableControl<T>> = delegate { thisRef, sh, key ->
+    val actionKey = "$key.action"
+    val control = DisplayableControl<T>(debounceInterval)
+    thisRef.run {
+        control.action.setValue(sh[actionKey] ?: DisplayableControl.Action.Hide)
+        control.action.viewFlowable
+            .subscribe { sh[actionKey] = it }
+            .autoDispose()
+    }
+    control
 }

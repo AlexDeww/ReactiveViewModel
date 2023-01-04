@@ -9,11 +9,44 @@ import com.alexdeww.reactiveviewmodel.core.state
 import io.reactivex.rxjava3.functions.Consumer
 import java.lang.ref.WeakReference
 
-abstract class BaseVisualControl<T : Any>(
+typealias ActionOnValueChanged<T> = (newValue: T) -> Unit
+typealias ActionOnActive<T> = VisualControlLiveDataMediator<T>.() -> Unit
+typealias ActionOnInactive<T> = VisualControlLiveDataMediator<T>.() -> Unit
+
+abstract class BaseVisualControl<T : Any, B : BaseVisualControl.BaseBinder<T, *>>(
     initialValue: T,
     initialEnabled: Boolean,
     initialVisibility: Visibility
-) : BaseControl() {
+) : BaseControl<B>() {
+
+    abstract class BaseBinder<T : Any, V : View>(
+        rvmViewComponent: RvmViewComponent
+    ) : ViewBinder(rvmViewComponent) {
+
+        protected abstract val control: BaseVisualControl<T, *>
+
+        @Suppress("LongParameterList")
+        protected fun bindTo(
+            view: V,
+            bindEnable: Boolean,
+            bindVisible: Boolean,
+            onValueChanged: ActionOnValueChanged<T>,
+            onActiveAction: ActionOnActive<T>,
+            onInactiveAction: ActionOnInactive<T>
+        ) {
+            val liveData = VisualControlLiveDataMediator(
+                control = control,
+                view = view,
+                bindEnable = bindEnable,
+                bindVisible = bindVisible,
+                onValueChanged = onValueChanged,
+                onActiveAction = onActiveAction,
+                onInactiveAction = onInactiveAction
+            )
+            rvmViewComponentRef.get()?.run { liveData.observe { /* empty */ } }
+        }
+
+    }
 
     enum class Visibility(val value: Int) {
         VISIBLE(View.VISIBLE),
@@ -40,33 +73,9 @@ abstract class BaseVisualControl<T : Any>(
 
 }
 
-typealias ActionOnValueChanged<T> = (newValue: T) -> Unit
-typealias ActionOnActive<T> = VisualControlLiveDataMediator<T>.() -> Unit
-typealias ActionOnInactive<T> = VisualControlLiveDataMediator<T>.() -> Unit
-
-fun <C : BaseVisualControl<T>, T : Any, V : View> C.baseBindTo(
-    rvmViewComponent: RvmViewComponent,
-    view: V,
-    bindEnable: Boolean,
-    bindVisible: Boolean,
-    onValueChanged: ActionOnValueChanged<T>,
-    onActiveAction: ActionOnActive<T>,
-    onInactiveAction: ActionOnInactive<T>
-) {
-    val liveData = VisualControlLiveDataMediator(
-        control = this@baseBindTo,
-        view = view,
-        bindEnable = bindEnable,
-        bindVisible = bindVisible,
-        onValueChanged = onValueChanged,
-        onActiveAction = onActiveAction,
-        onInactiveAction = onInactiveAction
-    )
-    rvmViewComponent.run { liveData.observe { /* empty */ } }
-}
-
-class VisualControlLiveDataMediator<T : Any>(
-    control: BaseVisualControl<T>,
+@Suppress("LongParameterList")
+class VisualControlLiveDataMediator<T : Any> internal constructor(
+    control: BaseVisualControl<T, *>,
     view: View,
     private val bindEnable: Boolean,
     private val bindVisible: Boolean,
@@ -78,7 +87,7 @@ class VisualControlLiveDataMediator<T : Any>(
     private val viewRef = WeakReference(view)
     private val view: View? get() = viewRef.get()
     private val controlRef = WeakReference(control)
-    private val control: BaseVisualControl<T>? get() = controlRef.get()
+    private val control: BaseVisualControl<T, *>? get() = controlRef.get()
     private var isEditing: Boolean = false
 
     val changeValueConsumer = Consumer<T> {

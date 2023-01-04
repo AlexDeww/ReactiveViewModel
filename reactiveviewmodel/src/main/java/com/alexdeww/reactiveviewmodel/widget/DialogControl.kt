@@ -3,16 +3,22 @@ package com.alexdeww.reactiveviewmodel.widget
 import android.app.Dialog
 import androidx.lifecycle.MediatorLiveData
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
+import com.alexdeww.reactiveviewmodel.core.RvmWidgetsSupport
 import com.alexdeww.reactiveviewmodel.core.action
+import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
+import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
+import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyReadOnlyDelegate
 import com.alexdeww.reactiveviewmodel.core.state
 import io.reactivex.rxjava3.core.Maybe
+import kotlin.properties.ReadOnlyProperty
 
 sealed class DialogResult {
     object Accept : DialogResult()
     object Cancel : DialogResult()
 }
 
-class DialogControl<T : Any, R : Any> internal constructor() : BaseControl() {
+class DialogControl<T : Any, R : Any> internal constructor() :
+    BaseControl<DialogControl<T, R>.Binder>() {
 
     sealed class Display<out T : Any> {
         data class Displayed<T : Any>(val data: T) : Display<T>()
@@ -47,6 +53,33 @@ class DialogControl<T : Any, R : Any> internal constructor() : BaseControl() {
         if (isShowing) displayed.consumer.accept(Display.Absent)
     }
 
+    override fun getBinder(rvmViewComponent: RvmViewComponent): Binder = Binder(rvmViewComponent)
+
+    inner class Binder internal constructor(
+        rvmViewComponent: RvmViewComponent
+    ) : ViewBinder(rvmViewComponent) {
+
+        @RvmBinderDslMarker
+        fun <D : Any> bindTo(
+            dialogHandlerListener: DialogHandlerListener<D>,
+            dialogCreator: DialogCreator<T, R, D>,
+        ) {
+            val liveData = DialogLiveDataMediator(
+                control = this@DialogControl,
+                dialogCreator = dialogCreator,
+                dialogHandlerListener = dialogHandlerListener
+            )
+            rvmViewComponentRef.get()?.run { liveData.observe { /* empty */ } }
+        }
+
+        @RvmBinderDslMarker
+        fun bindTo(dialogCreator: DialogCreator<T, R, Dialog>) = bindTo(
+            dialogHandlerListener = OrdinaryDialogHandlerListener(),
+            dialogCreator = dialogCreator
+        )
+
+    }
+
 }
 
 class DialogControlResult<R : Any> internal constructor(
@@ -68,9 +101,17 @@ class DialogControlResult<R : Any> internal constructor(
 
 }
 
-fun <T : Any, R : Any> dialogControl(): DialogControl<T, R> = DialogControl()
+@Suppress("unused")
+@RvmDslMarker
+fun <T : Any, R : Any> RvmWidgetsSupport.dialogControl(): ReadOnlyProperty<
+        RvmWidgetsSupport, DialogControl<T, R>> =
+    RvmPropertyReadOnlyDelegate(property = DialogControl())
 
-fun <T : Any> dialogControlWithResult(): DialogControl<T, DialogResult> = DialogControl()
+@Suppress("unused")
+@RvmDslMarker
+fun <T : Any> RvmWidgetsSupport.dialogControlWithResult(): ReadOnlyProperty<
+        RvmWidgetsSupport, DialogControl<T, DialogResult>> =
+    dialogControl()
 
 typealias DialogCreator<T, R, D> = (data: T, dc: DialogControlResult<R>) -> D
 
@@ -87,20 +128,6 @@ interface DialogHandlerListener<D> {
     }
 
 }
-
-fun <T : Any, R : Any, D : Any> DialogControl<T, R>.bindToEx(
-    rvmViewComponent: RvmViewComponent,
-    dialogCreator: DialogCreator<T, R, D>,
-    dialogHandlerListener: DialogHandlerListener<D>
-) {
-    val liveData = DialogLiveDataMediator(this, dialogCreator, dialogHandlerListener)
-    rvmViewComponent.run { liveData.observe { /* empty */ } }
-}
-
-fun <T : Any, R : Any> DialogControl<T, R>.bindTo(
-    rvmViewComponent: RvmViewComponent,
-    dialogCreator: DialogCreator<T, R, Dialog>
-) = bindToEx(rvmViewComponent, dialogCreator, OrdinaryDialogHandlerListener())
 
 private class DialogLiveDataMediator<T : Any, R : Any, D : Any>(
     private val control: DialogControl<T, R>,

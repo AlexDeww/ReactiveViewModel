@@ -3,9 +3,13 @@ package com.alexdeww.reactiveviewmodel.widget
 import android.text.*
 import android.view.View
 import android.widget.EditText
-import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
-import com.alexdeww.reactiveviewmodel.core.state
+import androidx.lifecycle.SavedStateHandle
+import com.alexdeww.reactiveviewmodel.core.*
+import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
+import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
+import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyReadOnlyDelegate
 import com.google.android.material.textfield.TextInputLayout
+import kotlin.properties.ReadOnlyProperty
 
 typealias FormatterAction = (text: String) -> String
 
@@ -15,7 +19,11 @@ class InputControl internal constructor(
     formatter: FormatterAction?,
     initialEnabled: Boolean,
     initialVisibility: Visibility
-) : BaseVisualControl<String>(initialText, initialEnabled, initialVisibility) {
+) : BaseVisualControl<String, InputControl.Binder>(
+    initialValue = initialText,
+    initialEnabled = initialEnabled,
+    initialVisibility = initialVisibility
+) {
 
     init {
         value.valueChangesHook = formatter
@@ -28,92 +36,131 @@ class InputControl internal constructor(
         super.onChangedValue(newValue)
     }
 
+    override fun getBinder(rvmViewComponent: RvmViewComponent): Binder = Binder(rvmViewComponent)
+
+    inner class Binder internal constructor(
+        rvmViewComponent: RvmViewComponent
+    ) : BaseBinder<String, View>(rvmViewComponent) {
+
+        override val control: BaseVisualControl<String, *> get() = this@InputControl
+
+        @RvmBinderDslMarker
+        fun bindTo(
+            editText: EditText,
+            bindError: Boolean = false,
+            bindEnable: Boolean = true,
+            bindVisible: Boolean = true
+        ) = bindTo(
+            view = editText,
+            editText = editText,
+            actionOnError = { editText.error = it },
+            bindError = bindError,
+            bindEnable = bindEnable,
+            bindVisible = bindVisible
+        )
+
+        @RvmBinderDslMarker
+        fun bindTo(
+            textInputLayout: TextInputLayout,
+            bindError: Boolean = false,
+            bindEnable: Boolean = true,
+            bindVisible: Boolean = true
+        ) = bindTo(
+            view = textInputLayout,
+            editText = textInputLayout.editText!!,
+            actionOnError = { textInputLayout.error = it },
+            bindError = bindError,
+            bindEnable = bindEnable,
+            bindVisible = bindVisible
+        )
+
+        @Suppress("LongParameterList")
+        private fun InputControl.bindTo(
+            view: View,
+            editText: EditText,
+            actionOnError: (String) -> Unit,
+            bindError: Boolean = false,
+            bindEnable: Boolean = true,
+            bindVisible: Boolean = true
+        ) {
+            var textWatcher: TextWatcher? = null
+            bindTo(
+                view = view,
+                bindEnable = bindEnable,
+                bindVisible = bindVisible,
+                onValueChanged = { newValue ->
+                    val editable = editText.text
+                    if (editable != null && !newValue.contentEquals(editable)) {
+                        val ss = SpannableString(newValue)
+                        TextUtils.copySpansFrom(editable, 0, ss.length, null, ss, 0)
+                        editable.replace(0, editable.length, ss)
+                    }
+                },
+                onActiveAction = {
+                    if (bindError) addSource(error.liveData) { actionOnError.invoke(it) }
+                    textWatcher = onTextChangedWatcher { changeValueConsumer.accept(it.toString()) }
+                    editText.addTextChangedListener(textWatcher)
+                },
+                onInactiveAction = {
+                    if (bindError) removeSource(error.liveData)
+                    textWatcher?.let { editText.removeTextChangedListener(it) }
+                    textWatcher = null
+                }
+            )
+        }
+
+    }
+
 }
 
-fun inputControl(
+@Suppress("unused")
+@RvmDslMarker
+fun RvmWidgetsSupport.inputControl(
     initialText: String = "",
     hideErrorOnUserInput: Boolean = true,
     formatter: FormatterAction? = null,
     initialEnabled: Boolean = true,
     initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): InputControl = InputControl(
-    initialText = initialText,
-    hideErrorOnUserInput = hideErrorOnUserInput,
-    formatter = formatter,
-    initialEnabled = initialEnabled,
-    initialVisibility = initialVisibility
-)
-
-fun InputControl.bindTo(
-    rvmViewComponent: RvmViewComponent,
-    editText: EditText,
-    bindError: Boolean = false,
-    bindEnable: Boolean = true,
-    bindVisible: Boolean = true
-) = bindTo(
-    rvmViewComponent = rvmViewComponent,
-    view = editText,
-    editText = editText,
-    actionOnError = { editText.error = it },
-    bindError = bindError,
-    bindEnable = bindEnable,
-    bindVisible = bindVisible
-)
-
-fun InputControl.bindTo(
-    rvmViewComponent: RvmViewComponent,
-    textInputLayout: TextInputLayout,
-    bindError: Boolean = false,
-    bindEnable: Boolean = true,
-    bindVisible: Boolean = true
-) = bindTo(
-    rvmViewComponent = rvmViewComponent,
-    view = textInputLayout,
-    editText = textInputLayout.editText!!,
-    actionOnError = { textInputLayout.error = it },
-    bindError = bindError,
-    bindEnable = bindEnable,
-    bindVisible = bindVisible
-)
-
-internal fun InputControl.bindTo(
-    rvmViewComponent: RvmViewComponent,
-    view: View,
-    editText: EditText,
-    actionOnError: (String) -> Unit,
-    bindError: Boolean = false,
-    bindEnable: Boolean = true,
-    bindVisible: Boolean = true
-) {
-    var textWatcher: TextWatcher? = null
-    baseBindTo(
-        rvmViewComponent = rvmViewComponent,
-        view = view,
-        bindEnable = bindEnable,
-        bindVisible = bindVisible,
-        onValueChanged = { newValue ->
-            val editable = editText.text
-            if (!newValue.contentEquals(editable)) {
-                if (editable is Spanned) {
-                    val ss = SpannableString(newValue)
-                    TextUtils.copySpansFrom(editable, 0, ss.length, null, ss, 0)
-                    editable.replace(0, editable.length, ss)
-                } else {
-                    editable.replace(0, editable.length, newValue)
-                }
-            }
-        },
-        onActiveAction = {
-            if (bindError) addSource(error.liveData) { actionOnError.invoke(it) }
-            textWatcher = onTextChangedWatcher { changeValueConsumer.accept(it.toString()) }
-            editText.addTextChangedListener(textWatcher)
-        },
-        onInactiveAction = {
-            if (bindError) removeSource(error.liveData)
-            textWatcher?.let { editText.removeTextChangedListener(it) }
-            textWatcher = null
-        }
+): ReadOnlyProperty<RvmWidgetsSupport, InputControl> = RvmPropertyReadOnlyDelegate(
+    property = InputControl(
+        initialText = initialText,
+        hideErrorOnUserInput = hideErrorOnUserInput,
+        formatter = formatter,
+        initialEnabled = initialEnabled,
+        initialVisibility = initialVisibility
     )
+)
+
+@RvmDslMarker
+fun SavedStateHandle.inputControl(
+    initialText: String = "",
+    hideErrorOnUserInput: Boolean = true,
+    formatter: FormatterAction? = null,
+    initialEnabled: Boolean = true,
+    initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
+): ReadOnlyProperty<RvmViewModelComponent, InputControl> = delegate { thisRef, stateHandle, key ->
+    val textKey = "$key.text"
+    val enabledKey = "$key.enabled"
+    val visibilityKey = "$key.visibility"
+    val control = InputControl(
+        initialText = stateHandle[textKey] ?: initialText,
+        hideErrorOnUserInput = hideErrorOnUserInput,
+        formatter = formatter,
+        initialEnabled = stateHandle[enabledKey] ?: initialEnabled,
+        initialVisibility = stateHandle[visibilityKey] ?: initialVisibility
+    )
+    thisRef.run {
+        control.value.viewFlowable
+            .subscribe { stateHandle[textKey] = it }
+            .autoDispose()
+        control.enabled.viewFlowable
+            .subscribe { stateHandle[enabledKey] = it }
+            .autoDispose()
+        control.visibility.viewFlowable
+            .subscribe { stateHandle[visibilityKey] = it }
+            .autoDispose()
+    }
+    control
 }
 
 private fun onTextChangedWatcher(
