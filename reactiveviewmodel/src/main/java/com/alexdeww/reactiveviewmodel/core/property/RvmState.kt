@@ -28,16 +28,41 @@ class RvmState<T : Any> internal constructor(
     val valueNonNull: T get() = value!!
     val hasValue: Boolean get() = value != null
 
-    val liveData: RvmLiveData<T> by lazy { StateLiveData() }
     val viewFlowable: Flowable<T> by lazy { observable.toViewFlowable() }
+    val liveData: RvmLiveData<T> by lazy { StateLiveData(viewFlowable) }
 
     fun getValueOrDef(actionDefValue: () -> T): T = value ?: actionDefValue()
     fun getValueOrDef(defValue: T): T = getValueOrDef { defValue }
 
-    @SuppressLint("CheckResult")
-    private inner class StateLiveData : RvmLiveData<T>() {
+    inner class Projection<R : Any> internal constructor(
+        distinctUntilChanged: Boolean,
+        projectionBlock: (value: T, consumer: Consumer<R>) -> Unit
+    ) {
+        private val projectionSubject = BehaviorSubject.create<R>()
+        private val projectionSource = projectionSubject.run {
+            if (distinctUntilChanged) distinctUntilChanged()
+            else this
+        }
+
+        val value: R? get() = projectionSubject.value
+        val valueNonNull: R get() = value!!
+        val hasValue: Boolean get() = value != null
+
+        val viewFlowable: Flowable<R> by lazy { projectionSource.toViewFlowable() }
+        val liveData: RvmLiveData<R> by lazy { StateLiveData(viewFlowable) }
+
+        fun getValueOrDef(actionDefValue: () -> R): R = value ?: actionDefValue()
+        fun getValueOrDef(defValue: R): R = getValueOrDef { defValue }
+
         init {
-            viewFlowable.subscribe { value = it }
+            observable.subscribe { projectionBlock(it, projectionSubject::onNext) }
+        }
+    }
+
+    @SuppressLint("CheckResult")
+    private class StateLiveData<T : Any>(source: Flowable<T>) : RvmLiveData<T>() {
+        init {
+            source.subscribe { value = it }
         }
     }
 

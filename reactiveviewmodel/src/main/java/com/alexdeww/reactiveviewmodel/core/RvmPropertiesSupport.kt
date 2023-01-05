@@ -21,6 +21,20 @@ interface RvmPropertiesSupport {
         if (this.value != value) setValue(value)
     }
 
+    @RvmDslMarker
+    fun <T : Any, R : Any> RvmState<T>.projectionEx(
+        distinctUntilChanged: Boolean = true,
+        projectionBlock: (value: T, consumer: Consumer<R>) -> Unit
+    ): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>.Projection<R>> =
+        RvmPropertyReadOnlyDelegate(property = Projection(distinctUntilChanged, projectionBlock))
+
+    @RvmDslMarker
+    fun <T : Any, R : Any> RvmState<T>.projection(
+        distinctUntilChanged: Boolean = true,
+        mapBlock: (value: T) -> R
+    ): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>.Projection<R>> =
+        projectionEx(distinctUntilChanged) { value, consumer -> consumer.accept(mapBlock(value)) }
+
 
     // Event
     val <T : Any> RvmEvent<T>.consumer: Consumer<T> get() = this.consumer

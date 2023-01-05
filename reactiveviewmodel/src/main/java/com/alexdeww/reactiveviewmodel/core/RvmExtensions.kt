@@ -36,6 +36,11 @@ fun <T : Any> RvmState<T>.observe(
     action: OnLiveDataAction<T>
 ): Observer<T> = liveData.observe(owner = owner, action = action)
 
+fun <T : Any> RvmState<*>.Projection<T>.observe(
+    owner: LifecycleOwner,
+    action: OnLiveDataAction<T>
+): Observer<T> = liveData.observe(owner = owner, action = action)
+
 fun RvmAction<Unit>.call() = call(Unit)
 
 typealias ActionOnClick = () -> Unit

@@ -31,6 +31,10 @@ interface RvmViewComponent : RvmAutoDisposableSupport {
         action: OnLiveDataAction<T>
     ): Observer<T> = observe(componentLifecycleOwner, action)
 
+    fun <T : Any> RvmState<*>.Projection<T>.observe(
+        action: OnLiveDataAction<T>
+    ): Observer<T> = observe(componentLifecycleOwner, action)
+
     fun <T : Any> RvmEvent<T>.observe(
         action: OnLiveDataAction<T>
     ): Observer<T> = observe(componentLifecycleOwner, action)
