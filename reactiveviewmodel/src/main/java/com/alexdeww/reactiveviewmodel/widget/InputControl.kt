@@ -29,7 +29,7 @@ class InputControl internal constructor(
         value.valueChangesHook = formatter
     }
 
-    val error by state<String>()
+    val error by RVM.state<String>()
 
     override fun onChangedValue(newValue: String) {
         if (hideErrorOnUserInput) error.consumer.accept("")
@@ -115,7 +115,7 @@ class InputControl internal constructor(
 
 @Suppress("unused")
 @RvmDslMarker
-fun RvmWidgetsSupport.inputControl(
+fun RVM.inputControl(
     initialText: String = "",
     hideErrorOnUserInput: Boolean = true,
     formatter: FormatterAction? = null,

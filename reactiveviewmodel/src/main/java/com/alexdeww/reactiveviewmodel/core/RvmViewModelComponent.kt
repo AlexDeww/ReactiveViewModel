@@ -7,6 +7,8 @@ import com.alexdeww.reactiveviewmodel.core.property.RvmState
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 @RvmBinderDslMarker
 interface RvmViewModelComponent : RvmPropertiesSupport, RvmWidgetsSupport,
@@ -35,21 +37,10 @@ interface RvmViewModelComponent : RvmPropertiesSupport, RvmWidgetsSupport,
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any> RvmViewModelComponent.invocable(
+fun <T : Any> RVM.invocable(
     block: (params: T) -> Completable
-): Lazy<RvmViewModelComponent.Invocable<T>> = lazy {
-    val action = RvmAction<T>()
-    val isExecuteSubj: BehaviorSubject<Boolean> = BehaviorSubject.createDefault(false)
-    action bind {
-        this.switchMapCompletable { params -> block(params).bindProgress(isExecuteSubj::onNext) }
-            .toObservable<Unit>()
-    }
-    object : RvmViewModelComponent.Invocable<T> {
-        override val isExecute: Boolean get() = isExecuteSubj.value ?: false
-        override val isExecuteObservable: Observable<Boolean> = isExecuteSubj.serialize()
-        override fun invoke(params: T) = action.consumer.accept(params)
-    }
-}
+): ReadOnlyProperty<RvmViewModelComponent, RvmViewModelComponent.Invocable<T>> =
+    InvocableDelegate(block)
 
 internal fun <T : Any, R : Any> RvmViewModelComponent.bindAction(
     action: RvmAction<T>,
@@ -73,4 +64,34 @@ internal fun <T : Any> RvmViewModelComponent.bindState(
         .retry()
         .subscribe()
         .autoDispose()
+}
+
+private class InvocableDelegate<T : Any>(
+    private val block: (params: T) -> Completable
+) : ReadOnlyProperty<RvmViewModelComponent, RvmViewModelComponent.Invocable<T>> {
+
+    private var value: RvmViewModelComponent.Invocable<T>? = null
+
+    override fun getValue(
+        thisRef: RvmViewModelComponent,
+        property: KProperty<*>
+    ): RvmViewModelComponent.Invocable<T> {
+        if (value == null) {
+            val action = RvmAction<T>()
+            val isExecuteSubj: BehaviorSubject<Boolean> = BehaviorSubject.createDefault(false)
+            thisRef.run {
+                action bind {
+                    this.switchMapCompletable { params -> block(params).bindProgress(isExecuteSubj::onNext) }
+                        .toObservable<Unit>()
+                }
+            }
+            value = object : RvmViewModelComponent.Invocable<T> {
+                override val isExecute: Boolean get() = isExecuteSubj.value ?: false
+                override val isExecuteObservable: Observable<Boolean> = isExecuteSubj.serialize()
+                override fun invoke(params: T) = action.consumer.accept(params)
+            }
+        }
+        return value!!
+    }
+
 }

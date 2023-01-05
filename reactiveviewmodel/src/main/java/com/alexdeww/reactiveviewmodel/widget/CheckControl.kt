@@ -2,12 +2,9 @@ package com.alexdeww.reactiveviewmodel.widget
 
 import android.widget.CompoundButton
 import androidx.lifecycle.SavedStateHandle
-import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
-import com.alexdeww.reactiveviewmodel.core.RvmViewModelComponent
-import com.alexdeww.reactiveviewmodel.core.RvmWidgetsSupport
+import com.alexdeww.reactiveviewmodel.core.*
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
-import com.alexdeww.reactiveviewmodel.core.delegate
 import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyReadOnlyDelegate
 import kotlin.properties.ReadOnlyProperty
 
@@ -55,7 +52,7 @@ class CheckControl internal constructor(
 
 @Suppress("unused")
 @RvmDslMarker
-fun RvmWidgetsSupport.checkControl(
+fun RVM.checkControl(
     initialChecked: Boolean = false,
     initialEnabled: Boolean = true,
     initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE

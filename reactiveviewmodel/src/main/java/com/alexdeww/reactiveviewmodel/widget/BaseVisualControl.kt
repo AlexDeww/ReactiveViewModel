@@ -3,6 +3,7 @@ package com.alexdeww.reactiveviewmodel.widget
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.lifecycle.MediatorLiveData
+import com.alexdeww.reactiveviewmodel.core.RVM
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import com.alexdeww.reactiveviewmodel.core.action
 import com.alexdeww.reactiveviewmodel.core.state
@@ -54,11 +55,11 @@ abstract class BaseVisualControl<T : Any, B : BaseVisualControl.BaseBinder<T, *>
         GONE(View.GONE)
     }
 
-    val value by state(initialValue)
-    val enabled by state(initialEnabled)
-    val visibility by state(initialVisibility)
+    val value by RVM.state(initialValue)
+    val enabled by RVM.state(initialEnabled)
+    val visibility by RVM.state(initialVisibility)
 
-    val actionChangeValue by action<T>()
+    val actionChangeValue by RVM.action<T>()
 
     init {
         actionChangeValue.observable

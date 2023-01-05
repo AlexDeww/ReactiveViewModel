@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.widget.RatingBar
 import androidx.lifecycle.SavedStateHandle
 import com.alexdeww.reactiveviewmodel.component.ReactiveViewModel
+import com.alexdeww.reactiveviewmodel.core.RVM
 import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
 import com.alexdeww.reactiveviewmodel.core.RvmWidgetsSupport
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
@@ -55,7 +56,7 @@ class RatingControl internal constructor(
 
 @Suppress("unused")
 @RvmDslMarker
-fun RvmWidgetsSupport.ratingControl(
+fun RVM.ratingControl(
     initialValue: Float = 0f,
     initialEnabled: Boolean = true,
     initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE

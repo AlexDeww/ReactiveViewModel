@@ -2,13 +2,10 @@ package com.alexdeww.reactiveviewmodel.widget
 
 import android.app.Dialog
 import androidx.lifecycle.MediatorLiveData
-import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
-import com.alexdeww.reactiveviewmodel.core.RvmWidgetsSupport
-import com.alexdeww.reactiveviewmodel.core.action
+import com.alexdeww.reactiveviewmodel.core.*
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
 import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyReadOnlyDelegate
-import com.alexdeww.reactiveviewmodel.core.state
 import io.reactivex.rxjava3.core.Maybe
 import kotlin.properties.ReadOnlyProperty
 
@@ -25,9 +22,9 @@ class DialogControl<T : Any, R : Any> internal constructor() :
         object Absent : Display<Nothing>()
     }
 
-    internal val result by action<R>()
+    internal val result by RVM.action<R>()
 
-    val displayed by state<Display<T>>(Display.Absent)
+    val displayed by RVM.state<Display<T>>(Display.Absent)
     val isShowing get() = displayed.value is Display.Displayed
 
     fun show(data: T) {
@@ -103,14 +100,12 @@ class DialogControlResult<R : Any> internal constructor(
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any, R : Any> RvmWidgetsSupport.dialogControl(): ReadOnlyProperty<
-        RvmWidgetsSupport, DialogControl<T, R>> =
+fun <T : Any, R : Any> RVM.dialogControl(): ReadOnlyProperty<RvmWidgetsSupport, DialogControl<T, R>> =
     RvmPropertyReadOnlyDelegate(property = DialogControl())
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any> RvmWidgetsSupport.dialogControlWithResult(): ReadOnlyProperty<
-        RvmWidgetsSupport, DialogControl<T, DialogResult>> =
+fun <T : Any> RVM.dialogControlWithResult(): ReadOnlyProperty<RvmWidgetsSupport, DialogControl<T, DialogResult>> =
     dialogControl()
 
 typealias DialogCreator<T, R, D> = (data: T, dc: DialogControlResult<R>) -> D

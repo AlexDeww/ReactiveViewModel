@@ -29,7 +29,7 @@ class DisplayableControl<T : Any> internal constructor(
 
     }
 
-    val action by state<Action<T>>(Action.Hide, debounceInterval)
+    val action by RVM.state<Action<T>>(Action.Hide, debounceInterval)
     val isShowing get() = action.value?.isShowing ?: false
     val showingValue: T? get() = action.value?.getShowingValue()
 
@@ -77,7 +77,7 @@ class DisplayableControl<T : Any> internal constructor(
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any> RvmWidgetsSupport.displayableControl(
+fun <T : Any> RVM.displayableControl(
     debounceInterval: Long? = null
 ): ReadOnlyProperty<RvmWidgetsSupport, DisplayableControl<T>> = RvmPropertyReadOnlyDelegate(
     property = DisplayableControl(debounceInterval)
