@@ -26,14 +26,14 @@ class InputControl internal constructor(
 ) {
 
     init {
-        value.valueChangesHook = formatter
+        data.valueChangesHook = formatter
     }
 
     val error by RVM.state<String>()
 
-    override fun onChangedValue(newValue: String) {
+    override fun onDataValueChanged(newValue: String) {
         if (hideErrorOnUserInput) error.consumer.accept("")
-        super.onChangedValue(newValue)
+        super.onDataValueChanged(newValue)
     }
 
     override fun getBinder(rvmViewComponent: RvmViewComponent): Binder = Binder(rvmViewComponent)
@@ -150,7 +150,7 @@ fun SavedStateHandle.inputControl(
         initialVisibility = stateHandle[visibilityKey] ?: initialVisibility
     )
     thisRef.run {
-        control.value.viewFlowable
+        control.data.viewFlowable
             .subscribe { stateHandle[textKey] = it }
             .autoDispose()
         control.enabled.viewFlowable

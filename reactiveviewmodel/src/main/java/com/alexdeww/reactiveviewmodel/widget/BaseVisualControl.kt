@@ -55,21 +55,21 @@ abstract class BaseVisualControl<T : Any, B : BaseVisualControl.BaseBinder<T, *>
         GONE(View.GONE)
     }
 
-    val value by RVM.state(initialValue)
+    val data by RVM.state(initialValue)
     val enabled by RVM.state(initialEnabled)
     val visibility by RVM.state(initialVisibility)
 
-    val actionChangeValue by RVM.action<T>()
+    val actionChangeDataValue by RVM.action<T>()
 
     init {
-        actionChangeValue.observable
-            .filter { it != value.value }
-            .subscribe(::onChangedValue)
+        actionChangeDataValue.observable
+            .filter { it != data.value }
+            .subscribe(::onDataValueChanged)
     }
 
     @CallSuper
-    protected open fun onChangedValue(newValue: T) {
-        value.consumer.accept(newValue)
+    protected open fun onDataValueChanged(newValue: T) {
+        data.consumer.accept(newValue)
     }
 
 }
@@ -92,7 +92,7 @@ class VisualControlLiveDataMediator<T : Any> internal constructor(
     private var isEditing: Boolean = false
 
     val changeValueConsumer = Consumer<T> {
-        if (!isEditing) this.control?.actionChangeValue?.call(it)
+        if (!isEditing) this.control?.actionChangeDataValue?.call(it)
     }
 
     override fun onActive() {
@@ -100,7 +100,7 @@ class VisualControlLiveDataMediator<T : Any> internal constructor(
         control?.apply {
             if (bindEnable) addSource(enabled.liveData) { view?.isEnabled = it }
             if (bindVisible) addSource(visibility.liveData) { view?.visibility = it.value }
-            addSource(value.liveData) { newValue ->
+            addSource(data.liveData) { newValue ->
                 isEditing = true
                 onValueChanged(newValue)
                 isEditing = false
@@ -113,7 +113,7 @@ class VisualControlLiveDataMediator<T : Any> internal constructor(
         control?.apply {
             if (bindEnable) removeSource(enabled.liveData)
             if (bindVisible) removeSource(visibility.liveData)
-            removeSource(value.liveData)
+            removeSource(data.liveData)
         }
         onInactiveAction.invoke(this)
         super.onInactive()

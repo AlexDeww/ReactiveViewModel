@@ -83,7 +83,7 @@ fun SavedStateHandle.ratingControl(
         initialVisibility = stateHandle[visibilityKey] ?: initialVisibility
     )
     thisRef.run {
-        control.value.viewFlowable
+        control.data.viewFlowable
             .subscribe { stateHandle[ratingKey] = it }
             .autoDispose()
         control.enabled.viewFlowable

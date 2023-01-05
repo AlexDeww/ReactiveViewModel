@@ -79,7 +79,7 @@ fun SavedStateHandle.checkControl(
         initialVisibility = stateHandle[visibilityKey] ?: initialVisibility
     )
     thisRef.run {
-        control.value.viewFlowable
+        control.data.viewFlowable
             .subscribe { stateHandle[checkedKey] = it }
             .autoDispose()
         control.enabled.viewFlowable
