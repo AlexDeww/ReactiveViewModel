@@ -56,7 +56,7 @@ fun RVM.checkControl(
     initialChecked: Boolean = false,
     initialEnabled: Boolean = true,
     initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmWidgetsSupport, CheckControl> = RvmPropertyReadOnlyDelegate(
+): ReadOnlyProperty<RvmPropertiesSupport, CheckControl> = RvmPropertyReadOnlyDelegate(
     property = CheckControl(
         initialChecked = initialChecked,
         initialEnabled = initialEnabled,

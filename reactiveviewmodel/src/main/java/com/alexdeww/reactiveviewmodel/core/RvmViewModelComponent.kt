@@ -11,8 +11,7 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 @RvmBinderDslMarker
-interface RvmViewModelComponent : RvmPropertiesSupport, RvmWidgetsSupport,
-    RvmAutoDisposableSupport {
+interface RvmViewModelComponent : RvmPropertiesSupport, RvmAutoDisposableSupport {
 
     interface Invocable<T> {
         val isExecute: Boolean

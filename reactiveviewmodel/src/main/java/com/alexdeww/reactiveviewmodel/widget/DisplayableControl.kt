@@ -79,7 +79,7 @@ class DisplayableControl<T : Any> internal constructor(
 @RvmDslMarker
 fun <T : Any> RVM.displayableControl(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmWidgetsSupport, DisplayableControl<T>> = RvmPropertyReadOnlyDelegate(
+): ReadOnlyProperty<RvmPropertiesSupport, DisplayableControl<T>> = RvmPropertyReadOnlyDelegate(
     property = DisplayableControl(debounceInterval)
 )
 

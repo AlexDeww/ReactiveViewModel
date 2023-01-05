@@ -100,12 +100,12 @@ class DialogControlResult<R : Any> internal constructor(
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any, R : Any> RVM.dialogControl(): ReadOnlyProperty<RvmWidgetsSupport, DialogControl<T, R>> =
+fun <T : Any, R : Any> RVM.dialogControl(): ReadOnlyProperty<RvmPropertiesSupport, DialogControl<T, R>> =
     RvmPropertyReadOnlyDelegate(property = DialogControl())
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any> RVM.dialogControlWithResult(): ReadOnlyProperty<RvmWidgetsSupport, DialogControl<T, DialogResult>> =
+fun <T : Any> RVM.dialogControlWithResult(): ReadOnlyProperty<RvmPropertiesSupport, DialogControl<T, DialogResult>> =
     dialogControl()
 
 typealias DialogCreator<T, R, D> = (data: T, dc: DialogControlResult<R>) -> D

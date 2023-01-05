@@ -121,7 +121,7 @@ fun RVM.inputControl(
     formatter: FormatterAction? = null,
     initialEnabled: Boolean = true,
     initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmWidgetsSupport, InputControl> = RvmPropertyReadOnlyDelegate(
+): ReadOnlyProperty<RvmPropertiesSupport, InputControl> = RvmPropertyReadOnlyDelegate(
     property = InputControl(
         initialText = initialText,
         hideErrorOnUserInput = hideErrorOnUserInput,
