@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.property.RvmAction
 import com.alexdeww.reactiveviewmodel.core.property.RvmObservableProperty
-import com.alexdeww.reactiveviewmodel.core.property.RvmPropertyInternal
+import com.alexdeww.reactiveviewmodel.core.property.RvmPropertyBase
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.functions.Function
@@ -121,7 +121,7 @@ fun Completable.bindProgressAny(progressConsumer: Consumer<Boolean>): Completabl
 }
 
 fun <T : Any> Observable<T>.untilOn(
-    vararg rvmProperty: RvmPropertyInternal<*>
+    vararg rvmProperty: RvmPropertyBase<*>
 ): Observable<T> = takeUntil(Observable.merge(rvmProperty.map { it.observable }))
 
 fun <T : Any> Observable<T>.untilOn(
@@ -129,7 +129,7 @@ fun <T : Any> Observable<T>.untilOn(
 ): Observable<T> = takeUntil(Observable.merge(observable.toList()))
 
 fun <T : Any> Maybe<T>.untilOn(
-    vararg rvmProperty: RvmPropertyInternal<*>
+    vararg rvmProperty: RvmPropertyBase<*>
 ): Maybe<T> = takeUntil(Maybe.merge(rvmProperty.map { it.observable.firstElement() }))
 
 fun <T : Any> Maybe<T>.untilOn(
@@ -137,7 +137,7 @@ fun <T : Any> Maybe<T>.untilOn(
 ): Maybe<T> = takeUntil(Maybe.merge(maybe.toList()))
 
 fun Completable.untilOn(
-    vararg rvmProperty: RvmPropertyInternal<*>
+    vararg rvmProperty: RvmPropertyBase<*>
 ): Completable = takeUntil(Completable.merge(rvmProperty.map {
     it.observable.firstElement().ignoreElement()
 }))

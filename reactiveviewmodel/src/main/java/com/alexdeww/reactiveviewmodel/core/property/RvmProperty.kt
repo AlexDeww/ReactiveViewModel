@@ -5,13 +5,13 @@ import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Consumer
 
-abstract class RvmPropertyInternal<T : Any> {
+abstract class RvmPropertyBase<T : Any> {
     internal abstract val consumer: Consumer<T>
     internal abstract val observable: Observable<T>
 }
 
 @Suppress("UnnecessaryAbstractClass")
-abstract class RvmProperty<T : Any> : RvmPropertyInternal<T>()
+abstract class RvmProperty<T : Any> : RvmPropertyBase<T>()
 
 interface RvmObservableProperty<T : Any> {
     val viewFlowable: Flowable<T>

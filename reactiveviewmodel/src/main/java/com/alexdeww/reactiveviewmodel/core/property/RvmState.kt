@@ -31,7 +31,7 @@ class RvmState<T : Any> internal constructor(
     inner class Projection<R : Any> internal constructor(
         distinctUntilChanged: Boolean,
         projectionBlock: (value: T, consumer: Consumer<R>) -> Unit
-    ) : RvmPropertyInternal<R>(), RvmObservableProperty<R>, RvmValueProperty<R> {
+    ) : RvmPropertyBase<R>(), RvmObservableProperty<R>, RvmValueProperty<R> {
         private val subject = BehaviorSubject.create<R>()
         override val consumer: Consumer<R> = Consumer(subject::onNext)
         override val observable: Observable<R> = subject.run {

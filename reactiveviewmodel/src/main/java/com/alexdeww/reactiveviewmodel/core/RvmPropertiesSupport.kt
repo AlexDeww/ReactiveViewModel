@@ -12,7 +12,7 @@ interface RvmPropertiesSupport {
 
     // common
     val <T : Any> RvmProperty<T>.consumer: Consumer<T> get() = this.consumer
-    val <T : Any> RvmProperty<T>.observable: Observable<T> get() = this.observable
+    val <T : Any> RvmPropertyBase<T>.observable: Observable<T> get() = this.observable
 
 
     // callable property
