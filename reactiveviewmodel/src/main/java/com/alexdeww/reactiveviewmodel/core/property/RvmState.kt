@@ -10,7 +10,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
 class RvmState<T : Any> internal constructor(
     initValue: T? = null,
     debounceInterval: Long? = null
-) {
+) : RvmProperty<T>(), RvmMutableValueProperty<T> {
 
     private val subject = when (initValue) {
         null -> BehaviorSubject.create()
@@ -19,43 +19,31 @@ class RvmState<T : Any> internal constructor(
     private val serializedSubject = subject.toSerialized()
 
     internal var valueChangesHook: ((value: T) -> T)? = null
-    internal val consumer: Consumer<T> = Consumer { newValue ->
+    override val consumer: Consumer<T> = Consumer { newValue ->
         serializedSubject.onNext(valueChangesHook?.invoke(newValue) ?: newValue)
     }
-    internal val observable: Observable<T> = serializedSubject.letDebounce(debounceInterval)
+    override val observable: Observable<T> = serializedSubject.letDebounce(debounceInterval)
 
-    val value: T? get() = subject.value
-    val valueNonNull: T get() = value!!
-    val hasValue: Boolean get() = value != null
-
-    val viewFlowable: Flowable<T> by lazy { observable.toViewFlowable() }
-    val liveData: RvmLiveData<T> by lazy { StateLiveData(viewFlowable) }
-
-    fun getValueOrDef(actionDefValue: () -> T): T = value ?: actionDefValue()
-    fun getValueOrDef(defValue: T): T = getValueOrDef { defValue }
+    override val value: T? get() = subject.value
+    override val viewFlowable: Flowable<T> by lazy { observable.toViewFlowable() }
+    override val liveData: RvmLiveData<T> by lazy { StateLiveData(viewFlowable) }
 
     inner class Projection<R : Any> internal constructor(
         distinctUntilChanged: Boolean,
         projectionBlock: (value: T, consumer: Consumer<R>) -> Unit
-    ) {
-        private val projectionSubject = BehaviorSubject.create<R>()
-        private val projectionSource = projectionSubject.run {
-            if (distinctUntilChanged) distinctUntilChanged()
-            else this
+    ) : RvmPropertyInternal<R>(), RvmObservableProperty<R>, RvmValueProperty<R> {
+        private val subject = BehaviorSubject.create<R>()
+        override val consumer: Consumer<R> = Consumer(subject::onNext)
+        override val observable: Observable<R> = subject.run {
+            if (distinctUntilChanged) distinctUntilChanged() else this
         }
 
-        val value: R? get() = projectionSubject.value
-        val valueNonNull: R get() = value!!
-        val hasValue: Boolean get() = value != null
-
-        val viewFlowable: Flowable<R> by lazy { projectionSource.toViewFlowable() }
-        val liveData: RvmLiveData<R> by lazy { StateLiveData(viewFlowable) }
-
-        fun getValueOrDef(actionDefValue: () -> R): R = value ?: actionDefValue()
-        fun getValueOrDef(defValue: R): R = getValueOrDef { defValue }
+        override val value: R? get() = subject.value
+        override val viewFlowable: Flowable<R> by lazy { observable.toViewFlowable() }
+        override val liveData: RvmLiveData<R> by lazy { StateLiveData(viewFlowable) }
 
         init {
-            observable.subscribe { projectionBlock(it, projectionSubject::onNext) }
+            this@RvmState.observable.subscribe { projectionBlock(it, subject::onNext) }
         }
     }
 

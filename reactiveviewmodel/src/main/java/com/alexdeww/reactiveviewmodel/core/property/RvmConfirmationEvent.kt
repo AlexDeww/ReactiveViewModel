@@ -11,7 +11,9 @@ import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Consumer
 
-class RvmConfirmationEvent<T : Any> internal constructor(debounceInterval: Long? = null) {
+class RvmConfirmationEvent<T : Any> internal constructor(
+    debounceInterval: Long? = null
+) : RvmProperty<T>(), RvmCallableProperty<T> {
 
     private sealed class EventType {
         data class Pending(val data: Any) : EventType()
@@ -23,17 +25,17 @@ class RvmConfirmationEvent<T : Any> internal constructor(debounceInterval: Long?
 
     private val eventState = RvmState<EventType>(EventType.Confirmed, debounceInterval)
 
-    internal val consumer: Consumer<T> = Consumer {
+    override val consumer: Consumer<T> = Consumer {
         eventState.consumer.accept(EventType.Pending(it))
     }
 
     @Suppress("UNCHECKED_CAST")
-    internal val observable: Observable<T> = eventState.observable
+    override val observable: Observable<T> = eventState.observable
         .ofType(EventType.Pending::class.java)
         .map { it.data as T }
 
-    val liveData: LiveData<T> by lazy { ConfirmationEventLiveData() }
-    val viewFlowable: Flowable<T> by lazy { observable.toViewFlowable() }
+    override val liveData: LiveData<T> by lazy { ConfirmationEventLiveData() }
+    override val viewFlowable: Flowable<T> by lazy { observable.toViewFlowable() }
     val isConfirmed: Boolean get() = eventState.value === EventType.Confirmed
 
     fun confirm() {

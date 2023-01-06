@@ -5,9 +5,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.property.RvmAction
-import com.alexdeww.reactiveviewmodel.core.property.RvmConfirmationEvent
-import com.alexdeww.reactiveviewmodel.core.property.RvmEvent
-import com.alexdeww.reactiveviewmodel.core.property.RvmState
+import com.alexdeww.reactiveviewmodel.core.property.RvmObservableProperty
+import com.alexdeww.reactiveviewmodel.core.property.RvmPropertyInternal
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.functions.Function
@@ -21,22 +20,7 @@ fun <T> LiveData<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>):
     return observer
 }
 
-fun <T : Any> RvmEvent<T>.observe(
-    owner: LifecycleOwner,
-    action: OnLiveDataAction<T>
-): Observer<T> = liveData.observe(owner = owner, action = action)
-
-fun <T : Any> RvmConfirmationEvent<T>.observe(
-    owner: LifecycleOwner,
-    action: OnLiveDataAction<T>
-): Observer<T> = liveData.observe(owner = owner, action = action)
-
-fun <T : Any> RvmState<T>.observe(
-    owner: LifecycleOwner,
-    action: OnLiveDataAction<T>
-): Observer<T> = liveData.observe(owner = owner, action = action)
-
-fun <T : Any> RvmState<*>.Projection<T>.observe(
+fun <T : Any> RvmObservableProperty<T>.observe(
     owner: LifecycleOwner,
     action: OnLiveDataAction<T>
 ): Observer<T> = liveData.observe(owner = owner, action = action)
@@ -137,38 +121,24 @@ fun Completable.bindProgressAny(progressConsumer: Consumer<Boolean>): Completabl
 }
 
 fun <T : Any> Observable<T>.untilOn(
-    vararg rvmAction: RvmAction<out Any>
-): Observable<T> = takeUntil(Observable.merge(rvmAction.map { it.observable }))
-
-fun <T : Any> Observable<T>.untilOn(
-    vararg event: RvmEvent<out Any>
-): Observable<T> = takeUntil(Observable.merge(event.map { it.observable }))
+    vararg rvmProperty: RvmPropertyInternal<*>
+): Observable<T> = takeUntil(Observable.merge(rvmProperty.map { it.observable }))
 
 fun <T : Any> Observable<T>.untilOn(
     vararg observable: Observable<*>
 ): Observable<T> = takeUntil(Observable.merge(observable.toList()))
 
 fun <T : Any> Maybe<T>.untilOn(
-    vararg action: RvmAction<*>
-): Maybe<T> = takeUntil(Maybe.merge(action.map { it.observable.firstElement() }))
-
-fun <T : Any> Maybe<T>.untilOn(
-    vararg event: RvmEvent<*>
-): Maybe<T> = takeUntil(Maybe.merge(event.map { it.observable.firstElement() }))
+    vararg rvmProperty: RvmPropertyInternal<*>
+): Maybe<T> = takeUntil(Maybe.merge(rvmProperty.map { it.observable.firstElement() }))
 
 fun <T : Any> Maybe<T>.untilOn(
     vararg maybe: Maybe<*>
 ): Maybe<T> = takeUntil(Maybe.merge(maybe.toList()))
 
 fun Completable.untilOn(
-    vararg action: RvmAction<*>
-): Completable = takeUntil(Completable.merge(action.map {
-    it.observable.firstElement().ignoreElement()
-}))
-
-fun Completable.untilOn(
-    vararg event: RvmEvent<*>
-): Completable = takeUntil(Completable.merge(event.map {
+    vararg rvmProperty: RvmPropertyInternal<*>
+): Completable = takeUntil(Completable.merge(rvmProperty.map {
     it.observable.firstElement().ignoreElement()
 }))
 
