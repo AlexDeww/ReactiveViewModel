@@ -26,7 +26,7 @@ class InputControl internal constructor(
 ) {
 
     init {
-        data.valueChangesHook = formatter
+        dataInternal.valueChangesHook = formatter
     }
 
     val error by RVM.state<String>()

@@ -23,23 +23,24 @@ class DialogControl<T : Any, R : Any> internal constructor() :
     }
 
     internal val result by RVM.action<R>()
+    internal val displayedInternal by RVM.state<Display<T>>(Display.Absent)
 
-    val displayed by RVM.state<Display<T>>(Display.Absent)
+    val displayed by RVM.stateProjection(displayedInternal, false) { it }
     val isShowing get() = displayed.value is Display.Displayed
 
     fun show(data: T) {
         dismiss()
-        displayed.consumer.accept(Display.Displayed(data))
+        displayedInternal.consumer.accept(Display.Displayed(data))
     }
 
     fun showForResult(data: T, dismissOnDispose: Boolean = false): Maybe<R> {
         dismiss()
         return result
             .observable
-            .doOnSubscribe { displayed.consumer.accept(Display.Displayed(data)) }
+            .doOnSubscribe { displayedInternal.consumer.accept(Display.Displayed(data)) }
             .doOnDispose { if (dismissOnDispose) dismiss() }
             .takeUntil(
-                displayed.observable
+                displayedInternal.observable
                     .skip(1)
                     .filter { it == Display.Absent }
             )
@@ -47,7 +48,7 @@ class DialogControl<T : Any, R : Any> internal constructor() :
     }
 
     fun dismiss() {
-        if (isShowing) displayed.consumer.accept(Display.Absent)
+        if (isShowing) displayedInternal.consumer.accept(Display.Absent)
     }
 
     override fun getBinder(rvmViewComponent: RvmViewComponent): Binder = Binder(rvmViewComponent)
@@ -135,7 +136,7 @@ private class DialogLiveDataMediator<T : Any, R : Any, D : Any>(
 
     override fun onActive() {
         super.onActive()
-        addSource(control.displayed.liveData) { displayData ->
+        addSource(control.displayedInternal.liveData) { displayData ->
             value = displayData
             when (displayData) {
                 is DialogControl.Display.Displayed -> {
@@ -154,7 +155,7 @@ private class DialogLiveDataMediator<T : Any, R : Any, D : Any>(
 
     override fun onInactive() {
         super.onInactive()
-        removeSource(control.displayed.liveData)
+        removeSource(control.displayedInternal.liveData)
         dialog?.let { onDialogUnbind(it) }
         releaseDialog()
     }

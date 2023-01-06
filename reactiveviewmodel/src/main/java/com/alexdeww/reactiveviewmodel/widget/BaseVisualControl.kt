@@ -3,10 +3,7 @@ package com.alexdeww.reactiveviewmodel.widget
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.lifecycle.MediatorLiveData
-import com.alexdeww.reactiveviewmodel.core.RVM
-import com.alexdeww.reactiveviewmodel.core.RvmViewComponent
-import com.alexdeww.reactiveviewmodel.core.action
-import com.alexdeww.reactiveviewmodel.core.state
+import com.alexdeww.reactiveviewmodel.core.*
 import io.reactivex.rxjava3.functions.Consumer
 import java.lang.ref.WeakReference
 
@@ -55,7 +52,10 @@ abstract class BaseVisualControl<T : Any, B : BaseVisualControl.BaseBinder<T, *>
         GONE(View.GONE)
     }
 
-    val data by RVM.state(initialValue)
+    protected val dataInternal by RVM.state(initialValue)
+    internal val dataInternalAccess = dataInternal
+
+    val data by RVM.stateProjection(dataInternal, false) { it }
     val enabled by RVM.state(initialEnabled)
     val visibility by RVM.state(initialVisibility)
 
@@ -63,13 +63,13 @@ abstract class BaseVisualControl<T : Any, B : BaseVisualControl.BaseBinder<T, *>
 
     init {
         actionChangeDataValue.observable
-            .filter { it != data.value }
+            .filter { it != dataInternal.value }
             .subscribe(::onDataValueChanged)
     }
 
     @CallSuper
     protected open fun onDataValueChanged(newValue: T) {
-        data.consumer.accept(newValue)
+        dataInternal.consumer.accept(newValue)
     }
 
 }
@@ -100,7 +100,7 @@ class VisualControlLiveDataMediator<T : Any> internal constructor(
         control?.apply {
             if (bindEnable) addSource(enabled.liveData) { view?.isEnabled = it }
             if (bindVisible) addSource(visibility.liveData) { view?.visibility = it.value }
-            addSource(data.liveData) { newValue ->
+            addSource(dataInternalAccess.liveData) { newValue ->
                 isEditing = true
                 onValueChanged(newValue)
                 isEditing = false
@@ -113,7 +113,7 @@ class VisualControlLiveDataMediator<T : Any> internal constructor(
         control?.apply {
             if (bindEnable) removeSource(enabled.liveData)
             if (bindVisible) removeSource(visibility.liveData)
-            removeSource(data.liveData)
+            removeSource(dataInternalAccess.liveData)
         }
         onInactiveAction.invoke(this)
         super.onInactive()

@@ -43,7 +43,7 @@ class RvmState<T : Any> internal constructor(
         override val liveData: RvmLiveData<R> by lazy { StateLiveData(viewFlowable) }
 
         init {
-            this@RvmState.observable.subscribe { projectionBlock(it, subject::onNext) }
+            this@RvmState.observable.subscribe { projectionBlock(it, consumer) }
         }
     }
 
