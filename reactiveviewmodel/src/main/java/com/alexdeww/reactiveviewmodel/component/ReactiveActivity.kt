@@ -12,7 +12,7 @@ import io.reactivex.rxjava3.disposables.Disposable
 abstract class ReactiveActivity : AppCompatActivity(), RvmViewComponent, RvmWidgetBindShortcut {
 
     private val rvmAutoDisposableStore by lazy { DefaultRvmDisposableStore() }
-    override val componentLifecycleOwner: LifecycleOwner get() = this
+    final override val componentLifecycleOwner: LifecycleOwner get() = this
 
     final override fun Disposable.autoDispose(
         tagKey: String,

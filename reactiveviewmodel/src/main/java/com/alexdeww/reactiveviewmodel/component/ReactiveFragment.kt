@@ -15,7 +15,7 @@ abstract class ReactiveFragment(
 ) : Fragment(layoutId), RvmViewComponent, RvmWidgetBindShortcut {
 
     private val rvmAutoDisposableStore by lazy { DefaultRvmDisposableStore() }
-    override val componentLifecycleOwner: LifecycleOwner get() = viewLifecycleOwner
+    final override val componentLifecycleOwner: LifecycleOwner get() = viewLifecycleOwner
 
     final override fun Disposable.autoDispose(
         tagKey: String,
