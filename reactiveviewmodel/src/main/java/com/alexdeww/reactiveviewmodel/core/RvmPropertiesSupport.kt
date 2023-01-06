@@ -32,22 +32,6 @@ interface RvmPropertiesSupport {
         if (this.value != value) setValue(value)
     }
 
-
-    // state
-    @RvmDslMarker
-    fun <T : Any, R : Any> RvmState<T>.projectionEx(
-        distinctUntilChanged: Boolean = true,
-        projectionBlock: (value: T, consumer: Consumer<R>) -> Unit
-    ): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>.Projection<R>> =
-        RvmPropertyReadOnlyDelegate(property = Projection(distinctUntilChanged, projectionBlock))
-
-    @RvmDslMarker
-    fun <T : Any, R : Any> RvmState<T>.projection(
-        distinctUntilChanged: Boolean = true,
-        mapBlock: (value: T) -> R
-    ): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>.Projection<R>> =
-        projectionEx(distinctUntilChanged) { value, consumer -> consumer.accept(mapBlock(value)) }
-
 }
 
 @Suppress("unused")
@@ -58,6 +42,25 @@ fun <T : Any> RVM.state(
 ): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>> = RvmPropertyReadOnlyDelegate(
     property = RvmState(initValue, debounceInterval)
 )
+
+@Suppress("unused")
+@RvmDslMarker
+fun <T : Any, R : Any> RVM.stateProjectionEx(
+    state: RvmState<T>,
+    distinctUntilChanged: Boolean = true,
+    projectionBlock: (value: T, consumer: Consumer<R>) -> Unit
+): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>.Projection<R>> = RvmPropertyReadOnlyDelegate(
+    property = state.Projection(distinctUntilChanged, projectionBlock)
+)
+
+@Suppress("unused")
+@RvmDslMarker
+fun <T : Any, R : Any> RVM.stateProjection(
+    state: RvmState<T>,
+    distinctUntilChanged: Boolean = true,
+    mapBlock: (value: T) -> R
+): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>.Projection<R>> =
+    stateProjectionEx(state, distinctUntilChanged) { v, c -> c.accept(mapBlock(v)) }
 
 @Suppress("unused")
 @RvmDslMarker
