@@ -69,25 +69,9 @@ fun SavedStateHandle.ratingControl(
     initialValue: Float = 0f,
     initialEnabled: Boolean = true,
     initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmViewModelComponent, RatingControl> = delegate { thisRef, stateHandle, key ->
-    val ratingKey = "$key.rating"
-    val enabledKey = "$key.enabled"
-    val visibilityKey = "$key.visibility"
-    val control = RatingControl(
-        initialValue = stateHandle[ratingKey] ?: initialValue,
-        initialEnabled = stateHandle[enabledKey] ?: initialEnabled,
-        initialVisibility = stateHandle[visibilityKey] ?: initialVisibility
-    )
-    thisRef.run {
-        control.data.viewFlowable
-            .subscribe { stateHandle[ratingKey] = it }
-            .autoDispose()
-        control.enabled.viewFlowable
-            .subscribe { stateHandle[enabledKey] = it }
-            .autoDispose()
-        control.visibility.viewFlowable
-            .subscribe { stateHandle[visibilityKey] = it }
-            .autoDispose()
-    }
-    control
-}
+): ReadOnlyProperty<RvmViewModelComponent, RatingControl> = visualControlDelegate(
+    initialValue = initialValue,
+    initialEnabled = initialEnabled,
+    initialVisibility = initialVisibility,
+    initControl = controlDefaultConstrictor(::RatingControl)
+)

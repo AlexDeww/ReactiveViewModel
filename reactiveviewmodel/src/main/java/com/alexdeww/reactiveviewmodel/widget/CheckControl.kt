@@ -69,25 +69,9 @@ fun SavedStateHandle.checkControl(
     initialChecked: Boolean = false,
     initialEnabled: Boolean = true,
     initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmViewModelComponent, CheckControl> = delegate { thisRef, stateHandle, key ->
-    val checkedKey = "$key.checked"
-    val enabledKey = "$key.enabled"
-    val visibilityKey = "$key.visibility"
-    val control = CheckControl(
-        initialChecked = stateHandle[checkedKey] ?: initialChecked,
-        initialEnabled = stateHandle[enabledKey] ?: initialEnabled,
-        initialVisibility = stateHandle[visibilityKey] ?: initialVisibility
-    )
-    thisRef.run {
-        control.data.viewFlowable
-            .subscribe { stateHandle[checkedKey] = it }
-            .autoDispose()
-        control.enabled.viewFlowable
-            .subscribe { stateHandle[enabledKey] = it }
-            .autoDispose()
-        control.visibility.viewFlowable
-            .subscribe { stateHandle[visibilityKey] = it }
-            .autoDispose()
-    }
-    control
-}
+): ReadOnlyProperty<RvmViewModelComponent, CheckControl> = visualControlDelegate(
+    initialValue = initialChecked,
+    initialEnabled = initialEnabled,
+    initialVisibility = initialVisibility,
+    initControl = controlDefaultConstrictor(::CheckControl)
+)

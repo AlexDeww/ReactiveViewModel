@@ -3,9 +3,12 @@ package com.alexdeww.reactiveviewmodel.widget
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.SavedStateHandle
 import com.alexdeww.reactiveviewmodel.core.*
+import com.alexdeww.reactiveviewmodel.widget.BaseVisualControl.Visibility
 import io.reactivex.rxjava3.functions.Consumer
 import java.lang.ref.WeakReference
+import kotlin.properties.ReadOnlyProperty
 
 typealias ActionOnValueChanged<T> = (newValue: T) -> Unit
 typealias ActionOnActive<T> = VisualControlLiveDataMediator<T>.() -> Unit
@@ -119,4 +122,51 @@ class VisualControlLiveDataMediator<T : Any> internal constructor(
         super.onInactive()
     }
 
+}
+
+typealias InitControl<T, C> = (
+    value: T,
+    isEnabled: Boolean,
+    visibility: Visibility,
+    stateHandle: SavedStateHandle,
+    key: String,
+) -> C
+
+fun <T : Any, C : BaseVisualControl<T, *>> SavedStateHandle.visualControlDelegate(
+    initialValue: T,
+    initialEnabled: Boolean,
+    initialVisibility: Visibility,
+    initControl: InitControl<T, C>,
+    watcher: RvmViewModelComponent.(stateHandle: SavedStateHandle, key: String) -> Unit = { _, _ -> }
+): ReadOnlyProperty<RvmViewModelComponent, C> = delegate { thisRef, stateHandle, key ->
+    val dataKey = "$key.data"
+    val enabledKey = "$key.enabled"
+    val visibilityKey = "$key.visibility"
+    val control = initControl(
+        stateHandle[dataKey] ?: initialValue,
+        stateHandle[enabledKey] ?: initialEnabled,
+        stateHandle[visibilityKey] ?: initialVisibility,
+        stateHandle, key
+    )
+    thisRef.run {
+        control.data.viewFlowable
+            .subscribe { stateHandle[dataKey] = it }
+            .autoDispose()
+        control.enabled.viewFlowable
+            .subscribe { stateHandle[enabledKey] = it }
+            .autoDispose()
+        control.visibility.viewFlowable
+            .subscribe { stateHandle[visibilityKey] = it }
+            .autoDispose()
+        watcher(stateHandle, key)
+    }
+    control
+}
+
+typealias ControlDefaultConstrictor<T, C> = (value: T, isEnabled: Boolean, visibility: Visibility) -> C
+
+inline fun <T : Any, C : BaseVisualControl<T, *>> controlDefaultConstrictor(
+    crossinline defaultConstructor: ControlDefaultConstrictor<T, C>
+): InitControl<T, C> = { value: T, isEnabled: Boolean, visibility: Visibility, _, _ ->
+    defaultConstructor(value, isEnabled, visibility)
 }

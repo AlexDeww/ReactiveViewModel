@@ -138,30 +138,20 @@ fun SavedStateHandle.inputControl(
     formatter: FormatterAction? = null,
     initialEnabled: Boolean = true,
     initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmViewModelComponent, InputControl> = delegate { thisRef, stateHandle, key ->
-    val textKey = "$key.text"
-    val enabledKey = "$key.enabled"
-    val visibilityKey = "$key.visibility"
-    val control = InputControl(
-        initialText = stateHandle[textKey] ?: initialText,
-        hideErrorOnUserInput = hideErrorOnUserInput,
-        formatter = formatter,
-        initialEnabled = stateHandle[enabledKey] ?: initialEnabled,
-        initialVisibility = stateHandle[visibilityKey] ?: initialVisibility
-    )
-    thisRef.run {
-        control.data.viewFlowable
-            .subscribe { stateHandle[textKey] = it }
-            .autoDispose()
-        control.enabled.viewFlowable
-            .subscribe { stateHandle[enabledKey] = it }
-            .autoDispose()
-        control.visibility.viewFlowable
-            .subscribe { stateHandle[visibilityKey] = it }
-            .autoDispose()
+): ReadOnlyProperty<RvmViewModelComponent, InputControl> = visualControlDelegate(
+    initialValue = initialText,
+    initialEnabled = initialEnabled,
+    initialVisibility = initialVisibility,
+    initControl = { value, isEnabled, visibility, _, _ ->
+        InputControl(
+            initialText = value,
+            hideErrorOnUserInput = hideErrorOnUserInput,
+            formatter = formatter,
+            initialEnabled = isEnabled,
+            initialVisibility = visibility
+        )
     }
-    control
-}
+)
 
 private fun onTextChangedWatcher(
     action: (CharSequence) -> Unit
