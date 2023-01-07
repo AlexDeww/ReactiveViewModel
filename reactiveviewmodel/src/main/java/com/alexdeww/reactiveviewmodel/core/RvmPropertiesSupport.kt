@@ -2,7 +2,7 @@ package com.alexdeww.reactiveviewmodel.core
 
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
 import com.alexdeww.reactiveviewmodel.core.property.*
-import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyReadOnlyDelegate
+import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyDelegate
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Consumer
 import kotlin.properties.ReadOnlyProperty
@@ -39,9 +39,9 @@ interface RvmPropertiesSupport {
 fun <T : Any> RVM.state(
     initValue: T? = null,
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>> = RvmPropertyReadOnlyDelegate(
-    property = RvmState(initValue, debounceInterval)
-)
+): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>> = RvmPropertyDelegate.def {
+    RvmState(initValue, debounceInterval)
+}
 
 @Suppress("unused")
 @RvmDslMarker
@@ -49,9 +49,9 @@ fun <T : Any, R : Any> RVM.stateProjectionEx(
     state: RvmState<T>,
     distinctUntilChanged: Boolean = true,
     projectionBlock: (value: T, consumer: Consumer<R>) -> Unit
-): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>.Projection<R>> = RvmPropertyReadOnlyDelegate(
-    property = state.Projection(distinctUntilChanged, projectionBlock)
-)
+): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>.Projection<R>> = RvmPropertyDelegate.def {
+    state.Projection(distinctUntilChanged, projectionBlock)
+}
 
 @Suppress("unused")
 @RvmDslMarker
@@ -76,9 +76,9 @@ fun RVM.progressState(
 @RvmDslMarker
 fun <T : Any> RVM.event(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmPropertiesSupport, RvmEvent<T>> = RvmPropertyReadOnlyDelegate(
-    property = RvmEvent(debounceInterval)
-)
+): ReadOnlyProperty<RvmPropertiesSupport, RvmEvent<T>> = RvmPropertyDelegate.def {
+    RvmEvent(debounceInterval)
+}
 
 @Suppress("unused")
 @RvmDslMarker
@@ -92,9 +92,9 @@ fun RVM.eventNone(
 @RvmDslMarker
 fun <T : Any> RVM.confirmationEvent(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmPropertiesSupport, RvmConfirmationEvent<T>> = RvmPropertyReadOnlyDelegate(
-    property = RvmConfirmationEvent(debounceInterval)
-)
+): ReadOnlyProperty<RvmPropertiesSupport, RvmConfirmationEvent<T>> = RvmPropertyDelegate.def {
+    RvmConfirmationEvent(debounceInterval)
+}
 
 @Suppress("unused")
 @RvmDslMarker
@@ -108,9 +108,9 @@ fun RVM.confirmationEventNone(
 @RvmDslMarker
 fun <T : Any> RVM.action(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmPropertiesSupport, RvmAction<T>> = RvmPropertyReadOnlyDelegate(
-    property = RvmAction(debounceInterval)
-)
+): ReadOnlyProperty<RvmPropertiesSupport, RvmAction<T>> = RvmPropertyDelegate.def {
+    RvmAction(debounceInterval)
+}
 
 @Suppress("unused")
 @RvmDslMarker

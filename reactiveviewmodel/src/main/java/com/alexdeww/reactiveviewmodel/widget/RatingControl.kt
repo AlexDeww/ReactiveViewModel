@@ -6,7 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.alexdeww.reactiveviewmodel.core.*
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
-import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyReadOnlyDelegate
+import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyDelegate
 import kotlin.properties.ReadOnlyProperty
 
 @SuppressLint("CheckResult")
@@ -56,13 +56,13 @@ fun RVM.ratingControl(
     initialValue: Float = 0f,
     initialEnabled: Boolean = true,
     initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmPropertiesSupport, RatingControl> = RvmPropertyReadOnlyDelegate(
-    property = RatingControl(
+): ReadOnlyProperty<RvmPropertiesSupport, RatingControl> = RvmPropertyDelegate.def {
+    RatingControl(
         initialValue = initialValue,
         initialEnabled = initialEnabled,
         initialVisibility = initialVisibility
     )
-)
+}
 
 @RvmDslMarker
 fun SavedStateHandle.ratingControl(

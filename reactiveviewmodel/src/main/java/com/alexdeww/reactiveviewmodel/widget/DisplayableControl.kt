@@ -5,7 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.alexdeww.reactiveviewmodel.core.*
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
-import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyReadOnlyDelegate
+import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyDelegate
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 import kotlin.properties.ReadOnlyProperty
@@ -79,9 +79,9 @@ class DisplayableControl<T : Any> internal constructor(
 @RvmDslMarker
 fun <T : Any> RVM.displayableControl(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmPropertiesSupport, DisplayableControl<T>> = RvmPropertyReadOnlyDelegate(
-    property = DisplayableControl(debounceInterval)
-)
+): ReadOnlyProperty<RvmPropertiesSupport, DisplayableControl<T>> = RvmPropertyDelegate.def {
+    DisplayableControl(debounceInterval)
+}
 
 @RvmDslMarker
 fun <T : Any> SavedStateHandle.displayableControl(

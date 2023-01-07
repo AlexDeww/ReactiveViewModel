@@ -5,7 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.alexdeww.reactiveviewmodel.core.*
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
-import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyReadOnlyDelegate
+import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyDelegate
 import kotlin.properties.ReadOnlyProperty
 
 class CheckControl internal constructor(
@@ -56,13 +56,13 @@ fun RVM.checkControl(
     initialChecked: Boolean = false,
     initialEnabled: Boolean = true,
     initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmPropertiesSupport, CheckControl> = RvmPropertyReadOnlyDelegate(
-    property = CheckControl(
+): ReadOnlyProperty<RvmPropertiesSupport, CheckControl> = RvmPropertyDelegate.def {
+    CheckControl(
         initialChecked = initialChecked,
         initialEnabled = initialEnabled,
         initialVisibility = initialVisibility
     )
-)
+}
 
 @RvmDslMarker
 fun SavedStateHandle.checkControl(

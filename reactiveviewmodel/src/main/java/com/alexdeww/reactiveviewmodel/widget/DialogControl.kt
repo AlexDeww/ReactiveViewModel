@@ -5,7 +5,7 @@ import androidx.lifecycle.MediatorLiveData
 import com.alexdeww.reactiveviewmodel.core.*
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
-import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyReadOnlyDelegate
+import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyDelegate
 import io.reactivex.rxjava3.core.Maybe
 import kotlin.properties.ReadOnlyProperty
 
@@ -102,7 +102,7 @@ class DialogControlResult<R : Any> internal constructor(
 @Suppress("unused")
 @RvmDslMarker
 fun <T : Any, R : Any> RVM.dialogControl(): ReadOnlyProperty<RvmPropertiesSupport, DialogControl<T, R>> =
-    RvmPropertyReadOnlyDelegate(property = DialogControl())
+    RvmPropertyDelegate.def { DialogControl() }
 
 @Suppress("unused")
 @RvmDslMarker
