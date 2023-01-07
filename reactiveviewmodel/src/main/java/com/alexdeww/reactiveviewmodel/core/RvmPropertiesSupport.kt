@@ -45,22 +45,22 @@ fun <T : Any> RVM.state(
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any, R : Any> RVM.stateProjectionEx(
-    state: RvmState<T>,
-    distinctUntilChanged: Boolean = true,
-    projectionBlock: (value: T, consumer: Consumer<R>) -> Unit
-): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>.Projection<R>> = RvmPropertyDelegate.def {
-    state.Projection(distinctUntilChanged, projectionBlock)
-}
-
-@Suppress("unused")
-@RvmDslMarker
-fun <T : Any, R : Any> RVM.stateProjection(
-    state: RvmState<T>,
+fun <T : Any, R : Any, P> RVM.stateProjection(
+    stateSource: P,
     distinctUntilChanged: Boolean = true,
     mapBlock: (value: T) -> R
-): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>.Projection<R>> =
-    stateProjectionEx(state, distinctUntilChanged) { v, c -> c.accept(mapBlock(v)) }
+): ReadOnlyProperty<RvmPropertiesSupport, RvmStateProjection<R>> where P : RvmPropertyBase<T>,
+                                                                       P : RvmValueProperty<T> {
+    return RvmPropertyDelegate.def {
+        val projection = RvmStateProjection<R>()
+        val d = stateSource.observable
+            .map(mapBlock)
+            .run { if (distinctUntilChanged) distinctUntilChanged() else this }
+            .subscribe(projection.consumer)
+        if (this is RvmAutoDisposableSupport) d.autoDispose()
+        projection
+    }
+}
 
 @Suppress("unused")
 @RvmDslMarker
