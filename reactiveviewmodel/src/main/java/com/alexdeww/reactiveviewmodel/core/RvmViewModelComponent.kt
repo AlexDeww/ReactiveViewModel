@@ -47,7 +47,7 @@ fun <T : Any> RVM.invocable(
 
 @Suppress("unused")
 @RvmDslMarker
-fun <T : Any> RVM.stateProjection(
+fun <T : Any> RVM.stateProjectionFromSource(
     initialValue: T? = null,
     distinctUntilChanged: Boolean = true,
     sourceBlock: () -> Observable<T>
