@@ -6,10 +6,7 @@ import com.alexdeww.reactiveviewmodel.core.DefaultRvmDisposableStore
 import com.alexdeww.reactiveviewmodel.core.RvmAutoDisposableSupport
 import com.alexdeww.reactiveviewmodel.core.RvmPropertiesSupport
 import com.alexdeww.reactiveviewmodel.core.RvmViewModelComponent
-import com.alexdeww.reactiveviewmodel.core.property.RvmCallableProperty
-import com.alexdeww.reactiveviewmodel.core.property.RvmMutableValueProperty
-import com.alexdeww.reactiveviewmodel.core.property.RvmProperty
-import com.alexdeww.reactiveviewmodel.core.property.RvmPropertyBase
+import com.alexdeww.reactiveviewmodel.core.property.*
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
@@ -22,6 +19,12 @@ import io.reactivex.rxjava3.functions.Consumer
 abstract class ReactiveViewModel : ViewModel(), RvmViewModelComponent {
 
     private val rvmAutoDisposableStore by lazy { DefaultRvmDisposableStore() }
+
+    @CallSuper
+    override fun onCleared() {
+        rvmAutoDisposableStore.dispose()
+        super.onCleared()
+    }
 
     final override fun Disposable.autoDispose(
         tagKey: String,
@@ -53,10 +56,16 @@ abstract class ReactiveViewModel : ViewModel(), RvmViewModelComponent {
         (this@ReactiveViewModel as RvmPropertiesSupport).run { setValueIfChanged(value) }
     }
 
-    @CallSuper
-    override fun onCleared() {
-        rvmAutoDisposableStore.dispose()
-        super.onCleared()
+    final override fun <T : Any> RvmAction<T>.bind(
+        transformChainBlock: Observable<T>.() -> Observable<out Any>
+    ) {
+        (this@ReactiveViewModel as RvmViewModelComponent).run { bind(transformChainBlock) }
+    }
+
+    final override fun <T : Any> RvmState<T>.bind(
+        transformChainBlock: Observable<T>.() -> Observable<out Any>
+    ) {
+        (this@ReactiveViewModel as RvmViewModelComponent).run { bind(transformChainBlock) }
     }
 
 }

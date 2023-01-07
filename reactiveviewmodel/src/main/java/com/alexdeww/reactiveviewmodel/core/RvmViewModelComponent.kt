@@ -3,10 +3,13 @@ package com.alexdeww.reactiveviewmodel.core
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
 import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
 import com.alexdeww.reactiveviewmodel.core.property.RvmAction
+import com.alexdeww.reactiveviewmodel.core.property.RvmProperty
 import com.alexdeww.reactiveviewmodel.core.property.RvmState
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -23,14 +26,14 @@ interface RvmViewModelComponent : RvmPropertiesSupport, RvmAutoDisposableSupport
     fun <T : Any> Observable<T>.applyDefaultErrorHandler(): Observable<T> = this
 
     @RvmBinderDslMarker
-    infix fun <T : Any, R : Any> RvmAction<T>.bind(
-        transformChainBlock: Observable<T>.() -> Observable<R>
-    ) = bindAction(this, transformChainBlock)
+    infix fun <T : Any> RvmAction<T>.bind(
+        transformChainBlock: Observable<T>.() -> Observable<out Any>
+    ) = bindProperty(this, transformChainBlock)
 
     @RvmBinderDslMarker
     infix fun <T : Any> RvmState<T>.bind(
         transformChainBlock: Observable<T>.() -> Observable<out Any>
-    ) = bindState(this, transformChainBlock)
+    ) = bindProperty(this, transformChainBlock)
 
 }
 
@@ -41,26 +44,24 @@ fun <T : Any> RVM.invocable(
 ): ReadOnlyProperty<RvmViewModelComponent, RvmViewModelComponent.Invocable<T>> =
     InvocableDelegate(block)
 
-internal fun <T : Any, R : Any> RvmViewModelComponent.bindAction(
-    action: RvmAction<T>,
-    transformChainBlock: Observable<T>.() -> Observable<R>
-) {
-    action.observable
-        .transformChainBlock()
-        .applyDefaultErrorHandler()
-        .retry()
-        .subscribe()
-        .autoDispose()
-}
-
-internal fun <T : Any> RvmViewModelComponent.bindState(
-    state: RvmState<T>,
+internal fun <T : Any> RvmViewModelComponent.bindProperty(
+    rvmProperty: RvmProperty<T>,
     transformChainBlock: Observable<T>.() -> Observable<out Any>
 ) {
-    state.observable
+    // 1 - need skip, 2 - has value (skip only if source has value)
+    val skipState = AtomicInteger(0)
+    val source = rvmProperty.observable
+        .replay(1)
+        .apply { connect().autoDispose() }
+        .doOnNext { skipState.compareAndSet(0, 2) }
+        .skipWhile { skipState.compareAndSet(1, 2) }
         .transformChainBlock()
-        .applyDefaultErrorHandler()
-        .retry()
+        .doOnError { skipState.compareAndSet(2, 1) }
+
+    Observable
+        .fromCallable { 0 }
+        .observeOn(AndroidSchedulers.mainThread())
+        .switchMap { source.applyDefaultErrorHandler().retry() }
         .subscribe()
         .autoDispose()
 }
