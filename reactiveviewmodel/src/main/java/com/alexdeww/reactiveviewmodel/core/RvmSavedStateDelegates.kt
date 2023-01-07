@@ -1,6 +1,7 @@
 package com.alexdeww.reactiveviewmodel.core
 
 import androidx.lifecycle.SavedStateHandle
+import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
 import com.alexdeww.reactiveviewmodel.core.property.RvmState
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
@@ -23,6 +24,7 @@ fun <T : Any> SavedStateHandle.valueNonNull(
     stateHandle[key] ?: defaultValue
 }
 
+@RvmDslMarker
 fun <T : Any> SavedStateHandle.state(
     initialValue: T? = null,
     debounceInterval: Long? = null
