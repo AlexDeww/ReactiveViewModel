@@ -4,8 +4,8 @@ import androidx.annotation.CallSuper
 import androidx.lifecycle.ViewModel
 import com.alexdeww.reactiveviewmodel.core.DefaultRvmDisposableStore
 import com.alexdeww.reactiveviewmodel.core.RvmAutoDisposableSupport
-import com.alexdeww.reactiveviewmodel.core.RvmPropertiesSupport
 import com.alexdeww.reactiveviewmodel.core.RvmViewModelComponent
+import com.alexdeww.reactiveviewmodel.core.annotation.RvmBinderDslMarker
 import com.alexdeww.reactiveviewmodel.core.property.*
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -19,6 +19,14 @@ import io.reactivex.rxjava3.functions.Consumer
 abstract class ReactiveViewModel : ViewModel(), RvmViewModelComponent {
 
     private val rvmAutoDisposableStore by lazy { DefaultRvmDisposableStore() }
+    private val defaultViewModelComponent = object : RvmViewModelComponent {
+        override fun Disposable.autoDispose(
+            tagKey: String,
+            storeKey: RvmAutoDisposableSupport.StoreKey?
+        ) = this@ReactiveViewModel.rvmAutoDisposableStore.run {
+            this@autoDispose.autoDispose(tagKey, storeKey)
+        }
+    }
 
     @CallSuper
     override fun onCleared() {
@@ -29,43 +37,45 @@ abstract class ReactiveViewModel : ViewModel(), RvmViewModelComponent {
     final override fun Disposable.autoDispose(
         tagKey: String,
         storeKey: RvmAutoDisposableSupport.StoreKey?
-    ) = rvmAutoDisposableStore.run { this@autoDispose.autoDispose(tagKey, storeKey) }
+    ) = defaultViewModelComponent.run { autoDispose(tagKey, storeKey) }
 
     final override val <T : Any> RvmProperty<T>.consumer: Consumer<T>
-        get() = (this@ReactiveViewModel as RvmPropertiesSupport).run { consumer }
+        get() = defaultViewModelComponent.run { consumer }
     final override val <T : Any> RvmPropertyBase<T>.observable: Observable<T>
-        get() = (this@ReactiveViewModel as RvmPropertiesSupport).run { observable }
+        get() = defaultViewModelComponent.run { observable }
 
     final override fun <T : Any, R> R.call(value: T) where R : RvmCallableProperty<T>,
                                                            R : RvmProperty<T> {
-        (this@ReactiveViewModel as RvmPropertiesSupport).run { call(value) }
+        defaultViewModelComponent.run { call(value) }
     }
 
     final override fun <R> R.call() where R : RvmCallableProperty<Unit>,
                                           R : RvmProperty<Unit> {
-        (this@ReactiveViewModel as RvmPropertiesSupport).run { call() }
+        defaultViewModelComponent.run { call() }
     }
 
     final override fun <T : Any, R> R.setValue(value: T) where R : RvmMutableValueProperty<T>,
                                                                R : RvmProperty<T> {
-        (this@ReactiveViewModel as RvmPropertiesSupport).run { setValue(value) }
+        defaultViewModelComponent.run { setValue(value) }
     }
 
     final override fun <T : Any, R> R.setValueIfChanged(value: T) where R : RvmMutableValueProperty<T>,
                                                                         R : RvmProperty<T> {
-        (this@ReactiveViewModel as RvmPropertiesSupport).run { setValueIfChanged(value) }
+        defaultViewModelComponent.run { setValueIfChanged(value) }
     }
 
+    @RvmBinderDslMarker
     final override fun <T : Any> RvmAction<T>.bind(
         transformChainBlock: Observable<T>.() -> Observable<out Any>
     ) {
-        (this@ReactiveViewModel as RvmViewModelComponent).run { bind(transformChainBlock) }
+        defaultViewModelComponent.run { bind(transformChainBlock) }
     }
 
+    @RvmBinderDslMarker
     final override fun <T : Any> RvmState<T>.bind(
         transformChainBlock: Observable<T>.() -> Observable<out Any>
     ) {
-        (this@ReactiveViewModel as RvmViewModelComponent).run { bind(transformChainBlock) }
+        defaultViewModelComponent.run { bind(transformChainBlock) }
     }
 
 }

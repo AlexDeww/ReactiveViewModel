@@ -13,6 +13,8 @@ import java.lang.ref.WeakReference
 @Suppress("UnnecessaryAbstractClass")
 abstract class BaseControl<B : BaseControl.ViewBinder> : RvmPropertiesSupport {
 
+    private val defaultPropertiesSupport = object : RvmPropertiesSupport {}
+
     abstract class ViewBinder(rvmViewComponent: RvmViewComponent) {
         protected val rvmViewComponentRef: WeakReference<RvmViewComponent> =
             WeakReference(rvmViewComponent)
@@ -21,28 +23,28 @@ abstract class BaseControl<B : BaseControl.ViewBinder> : RvmPropertiesSupport {
     internal abstract fun getBinder(rvmViewComponent: RvmViewComponent): B
 
     final override val <T : Any> RvmProperty<T>.consumer: Consumer<T>
-        get() = (this@BaseControl as RvmPropertiesSupport).run { consumer }
+        get() = defaultPropertiesSupport.run { consumer }
     final override val <T : Any> RvmPropertyBase<T>.observable: Observable<T>
-        get() = (this@BaseControl as RvmPropertiesSupport).run { observable }
+        get() = defaultPropertiesSupport.run { observable }
 
     final override fun <T : Any, R> R.call(value: T) where R : RvmCallableProperty<T>,
                                                            R : RvmProperty<T> {
-        (this@BaseControl as RvmPropertiesSupport).run { call(value) }
+        defaultPropertiesSupport.run { call(value) }
     }
 
     final override fun <R> R.call() where R : RvmCallableProperty<Unit>,
                                           R : RvmProperty<Unit> {
-        (this@BaseControl as RvmPropertiesSupport).run { call() }
+        defaultPropertiesSupport.run { call() }
     }
 
     final override fun <T : Any, R> R.setValue(value: T) where R : RvmMutableValueProperty<T>,
                                                                R : RvmProperty<T> {
-        (this@BaseControl as RvmPropertiesSupport).run { setValue(value) }
+        defaultPropertiesSupport.run { setValue(value) }
     }
 
     final override fun <T : Any, R> R.setValueIfChanged(value: T) where R : RvmMutableValueProperty<T>,
                                                                         R : RvmProperty<T> {
-        (this@BaseControl as RvmPropertiesSupport).run { setValueIfChanged(value) }
+        defaultPropertiesSupport.run { setValueIfChanged(value) }
     }
 
 }
