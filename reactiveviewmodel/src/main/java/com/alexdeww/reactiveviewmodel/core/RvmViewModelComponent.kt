@@ -5,6 +5,7 @@ import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
 import com.alexdeww.reactiveviewmodel.core.property.RvmAction
 import com.alexdeww.reactiveviewmodel.core.property.RvmProperty
 import com.alexdeww.reactiveviewmodel.core.property.RvmState
+import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyDelegate
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
@@ -43,6 +44,22 @@ fun <T : Any> RVM.invocable(
     block: (params: T) -> Completable
 ): ReadOnlyProperty<RvmViewModelComponent, RvmViewModelComponent.Invocable<T>> =
     InvocableDelegate(block)
+
+@Suppress("unused")
+@RvmDslMarker
+fun <T : Any> RVM.stateProjection(
+    initialValue: T? = null,
+    distinctUntilChanged: Boolean = true,
+    sourceBlock: () -> Observable<T>
+): ReadOnlyProperty<RvmViewModelComponent, RvmState<*>.Projection<T>> = RvmPropertyDelegate.def {
+    val state = RvmState(initialValue)
+    sourceBlock()
+        .applyDefaultErrorHandler()
+        .retry()
+        .subscribe(state.consumer)
+        .autoDispose()
+    state.Projection(distinctUntilChanged) { v, c -> c.accept(v) }
+}
 
 internal fun <T : Any> RvmViewModelComponent.bindProperty(
     rvmProperty: RvmProperty<T>,
