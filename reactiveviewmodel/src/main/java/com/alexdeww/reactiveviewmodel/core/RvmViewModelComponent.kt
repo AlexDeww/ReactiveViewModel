@@ -29,13 +29,13 @@ interface RvmViewModelComponent : RvmPropertiesSupport, RvmAutoDisposableSupport
 
     @RvmBinderDslMarker
     infix fun <T : Any> RvmAction<T>.bind(
-        transformChainBlock: Observable<T>.() -> Observable<out Any>
-    ) = bindProperty(this, transformChainBlock)
+        chainBlock: Observable<T>.() -> Observable<out Any>
+    ) = bindProperty(this, chainBlock)
 
     @RvmBinderDslMarker
     infix fun <T : Any> RvmState<T>.bind(
-        transformChainBlock: Observable<T>.() -> Observable<out Any>
-    ) = bindProperty(this, transformChainBlock)
+        chainBlock: Observable<T>.() -> Observable<out Any>
+    ) = bindProperty(this, chainBlock)
 
 }
 
@@ -63,7 +63,7 @@ fun <T : Any> RVM.stateProjectionFromSource(
 
 internal fun <T : Any> RvmViewModelComponent.bindProperty(
     rvmProperty: RvmProperty<T>,
-    transformChainBlock: Observable<T>.() -> Observable<out Any>
+    chainBlock: Observable<T>.() -> Observable<out Any>
 ) {
     // 1 - need skip, 2 - has value (skip only if source has value)
     val skipState = AtomicInteger(0)
@@ -72,7 +72,7 @@ internal fun <T : Any> RvmViewModelComponent.bindProperty(
         .apply { connect().autoDispose() }
         .doOnNext { skipState.compareAndSet(0, 2) }
         .skipWhile { skipState.compareAndSet(1, 2) }
-        .transformChainBlock()
+        .chainBlock()
         .doOnError { skipState.compareAndSet(2, 1) }
 
     Observable

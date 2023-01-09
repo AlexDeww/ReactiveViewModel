@@ -66,16 +66,16 @@ abstract class ReactiveViewModel : ViewModel(), RvmViewModelComponent {
 
     @RvmBinderDslMarker
     final override fun <T : Any> RvmAction<T>.bind(
-        transformChainBlock: Observable<T>.() -> Observable<out Any>
+        chainBlock: Observable<T>.() -> Observable<out Any>
     ) {
-        defaultViewModelComponent.run { bind(transformChainBlock) }
+        defaultViewModelComponent.run { bind(chainBlock) }
     }
 
     @RvmBinderDslMarker
     final override fun <T : Any> RvmState<T>.bind(
-        transformChainBlock: Observable<T>.() -> Observable<out Any>
+        chainBlock: Observable<T>.() -> Observable<out Any>
     ) {
-        defaultViewModelComponent.run { bind(transformChainBlock) }
+        defaultViewModelComponent.run { bind(chainBlock) }
     }
 
 }
