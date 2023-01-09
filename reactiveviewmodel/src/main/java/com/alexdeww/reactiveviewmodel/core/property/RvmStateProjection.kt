@@ -7,6 +7,15 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 
+/**
+ * Почти тоже самое, что и [RvmState], но отличается тем,
+ * что никто не может передавать данные няпрямую.
+ *
+ * * Никто не может передавать данные няпрямую.
+ * [RvmStateProjection] может получать данные от источников:
+ * [Observable], [RvmState], [RvmStateProjection],
+ * либо объекта наследника [RvmPropertyBase] и [RvmValueProperty].
+ */
 class RvmStateProjection<T : Any> internal constructor(
     initValue: T? = null,
 ) : RvmPropertyBase<T>(), RvmValueProperty<T> {

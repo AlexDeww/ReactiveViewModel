@@ -4,6 +4,11 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.subjects.PublishSubject
 
+/**
+ * В основном предназначен для передачи событий или данных из View во ViewModel.
+ *
+ * * Не хранит данные.
+ */
 class RvmAction<T : Any> internal constructor(
     debounceInterval: Long? = null
 ) : RvmProperty<T>() {

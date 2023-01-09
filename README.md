@@ -1,11 +1,10 @@
 # ReactiveViewModel
 
-This is Android reactive MVVM library, fork https://github.com/dmdevgo/RxPM
+Очередная Android Reactive MVVM, за основу взята https://github.com/dmdevgo/RxPM
    
-The Status of the lib: 
 [![](https://jitpack.io/v/AlexDeww/ReactiveViewModel.svg)](https://jitpack.io/#AlexDeww/ReactiveViewModel)
 
-How to use this lib in your project:
+Подключение:
 ```gradle
 allprojects {
 	repositories {
@@ -15,7 +14,6 @@ allprojects {
 }
 ```
 
-Add to your app module build.gradle
 ```gradle
 dependencies {
         implementation "com.github.AlexDeww:ReactiveViewModel:$last_version"
@@ -24,147 +22,135 @@ dependencies {
 
 ### Пример ViewModel
 ```kotlin
-class EnterSmsCodeViewModel(
-    val fullPhoneNumber: String,
-    private val requestSmsCode: RequestSmsCode,
-    private val registerOrSignIn: RegisterOrSignIn
-): ReactiveViewModel() {
+class SomeViewModel(
+    savedState: SavedStateHandle
+) : ReactiveViewModel() {
 
-    private val eventCancelTimer = eventNone()
-
-    val progressVisibility = state(initValue, PROGRESS_DEBOUNCE_INTERVAL)
-    val timerVisibility = state(false)
-    val timerValue = state<Long>()
-    val blocked = state(false)
-
-    val inputCode = inputControl()
-
-    val eventWrongSmsCode = eventNone()
-    val eventGoToTripStart = eventNone()
-    val eventGoToAcceptPolicy = eventNone()
-    val eventCodeExpired = eventNone()
-
-    val actionSendCodeAgainClick = debouncedActionNone()
+    val progressVisible by RVM.progressState(initValue = false)
+    val tryCount by savedState.state(initialValue = 5)
     
-    init {
-        inputCode.value.observable
-            .filter { blocked.value == false && progressVisibility.value == false }
-            .debounce()
-            .filter { it.length == SMS_CODE_LENGTH }
-            .doOnNext { analyticsManager.trackEvent(AppAnalyticEvents.ConfirmPhone) }
-            .switchMapSingle { register(it) }
-            .doOnError { inputCode.actionChangeValue.call("") }
-            .retry()
-            .subscribe {
-                when {
-                    it -> eventGoToTripStart.call()
-                    else -> eventGoToAcceptPolicy.call()
-                }
-            }
-            .disposeOnCleared()
-
-        actionSendCodeAgainClick.observable
-            .filter { blocked.value == false && timerVisibility.value == false && progressVisibility.value == false }
-            .switchMapSingle { requestCode() }
-            .switchMap { getTimerObservable(it) }
-            .retry()
-            .subscribe()
-            .disposeOnCleared()
-
-        getRequestSmsTimerValue.execute(Unit)
-            .takeIf { it > 0 }
-            ?.let { getTimerObservable(it) }
-            ?.subscribe()
-            ?.disposeOnCleared()
+    val tryCountLabelVisible by RVM.stateProjection(tryCount) { it > 0 }
+    val sendButtonEnable by RVM.stateProjectionFromSource(initialValue = false) {
+        combineLatest(
+            progressVisible.observable,
+            tryCountLabelVisible.observable,
+            inputCode.data.observable.map { it.length >= 4 }
+        ) { isProgress, hasTryCount, codeReached -> !isProgress && hasTryCount && codeReached }
     }
+
+    val inputCode by savedState.inputControl()
+
+    val eventDone by RVM.eventNone()
+    val eventError by RVM.event<Throwable>()
+
+    val actionOnSendCodeClick by RVM.debouncedActionNone()
+
+    private val sendCode by RVM.invocable<String> { code ->
+        Completable
+            .fromAction {
+                tryCount.valueNonNull.takeIf { it > 0 }?.let { tryCount.setValue(it - 1) }
+                Log.d("VM", "Code sent: $code")
+            }
+            .delaySubscription(5, TimeUnit.SECONDS)
+            .bindProgress(progressVisible.consumer)
+            .doOnComplete { eventDone.call() }
+            .doOnError { eventError.call(it) }
+    }
+
+    init {
+        actionOnSendCodeClick.bind {
+            this.filter { sendButtonEnable.value == true }
+                .doOnNext { sendCode(inputCode.data.valueNonNull) }
+        }
+    }
+
 }
 ```
 
 ### Связь с View
 ```kotlin
-class EnterSmsCodeFragment : ReactiveFragment() {
+class SomeFragment : ReactiveFragment() {
 
-    companion object {
-        private const val ARG_FULL_PHONE_NUMBER = "EnterSmsCodeFragment.ARG_FULL_PHONE_NUMBER"
-	
-        fun create(fullPhoneNumber: String): EnterSmsCodeFragment = EnterSmsCodeFragment()
-            .args { putString(ARG_FULL_PHONE_NUMBER, fullPhoneNumber) }
-    }
-    
-    private val viewModel by viewModel<EnterSmsCodeViewModel> {  // koin!!!
-        parametersOf(arguments?.getString(ARG_FULL_PHONE_NUMBER)!!)
-    }
-    
+    private val viewModel: SomeViewModel by Delegates.notNull()
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
-	viewModel.progressVisibility.observe { if (it) showProgress() else hideProgress() }
-	viewModel.timerValue.observe { tvTimer.text = formatTimer(it) }
-	viewModel.timerVisibility.observe { tvTimer.isVisible = it }
-	
-	viewModel.eventError.observe { showError(it) }
-	viewModel.eventGoToTripStart.observe { router.newRootScreen(Screens.Main.TripSetupFlowScreen()) }
-	
-	viewModel.inputCode.bindTo(etSmsCode)
-        viewModel.actionSendCodeAgainClick.bindOnClick(btnSendAgain)
+
+        viewModel.progressVisible.observe { progressView.isVisible = it }
+        viewModel.tryCount.observe { tryCountLabel.text = it.toString() }
+        viewModel.tryCountLabelVisible.observe { tryCountLabel.isVisible = it }
+        viewModel.sendButtonEnable.observe { sendButton.isEnabled = it }
+
+        viewModel.inputCode.bindTo(codeEditText)
+
+        viewModel.eventDone.observe { /* close fragment */ }
+        viewModel.eventError.observe { /* show error */ }
+
+        viewModel.actionOnSendCodeClick.bindOnClick(sendButton)
     }
-    
+
 }
 ```
 
-### State
-**State** хранит послдение значение и излучает его при подписке. Используется для передачи значения из ViewModel в View
+## Есть 5 базовых объектов для взаимодействия View и ViewModel
 
-Создание
+### RvmState
+В основном предназначен для передачи состояния из **ViewModel** во **View**.
+ - Передавать данные в **RvmState** могут только наследники **RvmPropertiesSupport**.
+ - Всегда хранит последнее переданное значение.
+ - Каждый подписчик в первую очередь получит последннее сохраненное значение.
+ 
 ```kotlin
-val isProgress = state<Boolean>(false)
+val state by RVM.state<DataType>(initialValue = null or data)
 ```
-Из ViewModel
 ```kotlin
-isProgress.consumer.accept(true)
-isProgress.setValue(true) // расширение для isProgress.consumer.accept(true)
-isProgress.setValueIfChanged(true) // расширение для isProgress.consumer.accept(true) но с проверкой if (lastValue != newValue)
-```
-В View
-```kotlin
-isProgress.observe { value -> }
+val state by savedStateHandle.state<DataType>(initialValue = null or data)
 ```
 
-### Action
-**Action** ипользуется для передачи событий или параметров из View в ViewModel
+### RvmStateProjection
+Почти тоже самое, что и **RvmState**, но отличается тем, что никто не может передавать данные няпрямую.
+ - Никто не может передавать данные няпрямую. **RvmStateProjection** может получать данные от источников: **Observable**, **RvmState**, **RvmStateProjection**, либо объекта наследника **RvmPropertyBase** и **RvmValueProperty**.
 
-Создание
 ```kotlin
-val actionSendSmsCodeAgain = action<Unit>() // or actionEmpty() если тип Unit
+val state by RVM.state<DataType>(initialValue = null or data)
+val stateProjection by RVM.stateProjection(state) { /* map block */ }
 ```
-Из ViewModel 
 ```kotlin
-actionSendSmsCodeAgain.consumer.accept(Unit)
-actionSendSmsCodeAgain.call() // расширение для actionSendSmsCodeAgain.consumer.accept(Unit)
-```
-В View
-```kotlin
-actionSendSmsCodeAgain.bindOnClick(btnSendSmsCode)
-btnSendSmsCode.setOnClickListener { actionSendSmsCodeAgain.call() }
+val stateProjection by RVM.stateProjectionFromSource(initialValue = null or data) { ObservableSource }
 ```
 
-### Event
-**Event** ипользуется для передачи событий или параметров из ViewModel в View. Хранит последнее переданное значение, пока не появится подписчик.
+### RvmEvent
+В основном предназначен для передачи событий или данных из **ViewModel** во **View**.
+ - Передавать данные в **RvmEvent** могут только наследники **RvmPropertiesSupport**.
+ - Хранит последнее переданное значение пока не появится подписчик. Только первый подписчик получит последнее сохраненное значение, все последующие подписки, будут получать только новые значения.
+ - Пока есть активная подписка, данные не сохраняются.
 
-Создание
 ```kotlin
-val eventDone = event<Unit>() // or eventEmpty() если тип Unit
+val event by RVM.event<DataType>()
 ```
-Из ViewModel 
 ```kotlin
-eventDone.consumer.accept(Unit)
-eventDone.call() // расширение для eventDone.consumer.accept(Unit)
-```
-В View
-```kotlin
-eventDone.observe { value -> }
+val event by RVM.eventNone() // for Unit Data Type 
 ```
 
+### RvmConfirmationEvent
+Почти тоже самое, что и **RvmEvent**, но отличается тем, что хранит последнее значение пока не будет вызван метод **confirm**.
+ - Передавать данные в **RvmConfirmationEvent** могут только наследники **RvmPropertiesSupport**.
+ - Хранит последнее переданное значение пока не будет вызван метод **confirm**. Каждый новый подписчик будет получать последнее сохраненное значение, пока не вызван метод **confirm**.
 
-## Инфо
-Вся либа, надстройка над LiveData. Cвойства(state, event) имею поле **liveData** для возможности совместного использования с **DataBinding**
+```kotlin
+val confirmationEvent by RVM.confirmationEvent<DataType>()
+```
+```kotlin
+val confirmationEvent by RVM.confirmationEventNone() // for Unit Data Type 
+```
+
+### RvmAction
+В основном предназначен для передачи событий или данных из **View** во **ViewModel**.
+ - Не хранит данные.
+
+```kotlin
+val action by RVM.action<DataType>()
+```
+```kotlin
+val action by RVM.actionNone() // for Unit Data Type 
+```

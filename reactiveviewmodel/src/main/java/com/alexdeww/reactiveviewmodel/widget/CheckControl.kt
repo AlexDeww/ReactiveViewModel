@@ -73,5 +73,5 @@ fun SavedStateHandle.checkControl(
     initialValue = initialChecked,
     initialEnabled = initialEnabled,
     initialVisibility = initialVisibility,
-    initControl = controlDefaultConstrictor(::CheckControl)
+    initControl = controlDefaultConstructor(::CheckControl)
 )

@@ -73,5 +73,5 @@ fun SavedStateHandle.ratingControl(
     initialValue = initialValue,
     initialEnabled = initialEnabled,
     initialVisibility = initialVisibility,
-    initControl = controlDefaultConstrictor(::RatingControl)
+    initControl = controlDefaultConstructor(::RatingControl)
 )

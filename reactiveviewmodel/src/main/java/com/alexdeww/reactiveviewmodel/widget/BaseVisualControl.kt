@@ -163,10 +163,10 @@ fun <T : Any, C : BaseVisualControl<T, *>> SavedStateHandle.visualControlDelegat
     control
 }
 
-typealias ControlDefaultConstrictor<T, C> = (value: T, isEnabled: Boolean, visibility: Visibility) -> C
+typealias ControlDefaultConstructor<T, C> = (value: T, isEnabled: Boolean, visibility: Visibility) -> C
 
-inline fun <T : Any, C : BaseVisualControl<T, *>> controlDefaultConstrictor(
-    crossinline defaultConstructor: ControlDefaultConstrictor<T, C>
+inline fun <T : Any, C : BaseVisualControl<T, *>> controlDefaultConstructor(
+    crossinline defaultConstructor: ControlDefaultConstructor<T, C>
 ): InitControl<T, C> = { value: T, isEnabled: Boolean, visibility: Visibility, _, _ ->
     defaultConstructor(value, isEnabled, visibility)
 }
