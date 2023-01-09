@@ -53,15 +53,11 @@ fun <T : Any> RVM.stateProjectionFromSource(
     sourceBlock: () -> Observable<T>
 ): ReadOnlyProperty<RvmViewModelComponent, RvmStateProjection<T>> = RvmPropertyDelegate.def {
     val projection = RvmStateProjection(initialValue)
-    sourceBlock()
-        .applyDefaultErrorHandler()
-        .retry()
-        .subscribe(projection.consumer)
-        .autoDispose()
+    lateSubscription(sourceBlock().doOnNext(projection.consumer))
     projection
 }
 
-internal fun <T : Any> RvmViewModelComponent.bindProperty(
+private fun <T : Any> RvmViewModelComponent.bindProperty(
     rvmProperty: RvmProperty<T>,
     chainBlock: Observable<T>.() -> Observable<out Any>
 ) {
@@ -75,10 +71,15 @@ internal fun <T : Any> RvmViewModelComponent.bindProperty(
         .chainBlock()
         .doOnError { skipState.compareAndSet(2, 1) }
 
+    lateSubscription(source)
+}
+
+private fun RvmViewModelComponent.lateSubscription(
+    source: Observable<*>
+) {
     Observable
-        .fromCallable { 0 }
-        .observeOn(AndroidSchedulers.mainThread())
-        .switchMap { source.applyDefaultErrorHandler().retry() }
+        .defer { source.applyDefaultErrorHandler().retry() }
+        .subscribeOn(AndroidSchedulers.mainThread())
         .subscribe()
         .autoDispose()
 }
