@@ -8,11 +8,11 @@ import com.alexdeww.reactiveviewmodel.core.annotation.RvmDslMarker
 import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyDelegate
 import kotlin.properties.ReadOnlyProperty
 
-class CheckControl internal constructor(
+class RvmCheckControl internal constructor(
     initialChecked: Boolean,
     initialEnabled: Boolean,
     initialVisibility: Visibility
-) : BaseVisualControl<Boolean, CheckControl.Binder>(
+) : RvmBaseVisualControl<Boolean, RvmCheckControl.Binder>(
     initialValue = initialChecked,
     initialEnabled = initialEnabled,
     initialVisibility = initialVisibility
@@ -24,7 +24,7 @@ class CheckControl internal constructor(
         rvmViewComponent: RvmViewComponent
     ) : BaseBinder<Boolean, CompoundButton>(rvmViewComponent) {
 
-        override val control: BaseVisualControl<Boolean, *> get() = this@CheckControl
+        override val control: RvmBaseVisualControl<Boolean, *> get() = this@RvmCheckControl
 
         @RvmBinderDslMarker
         fun bindTo(
@@ -55,9 +55,9 @@ class CheckControl internal constructor(
 fun RVM.checkControl(
     initialChecked: Boolean = false,
     initialEnabled: Boolean = true,
-    initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmPropertiesSupport, CheckControl> = RvmPropertyDelegate.def {
-    CheckControl(
+    initialVisibility: RvmBaseVisualControl.Visibility = RvmBaseVisualControl.Visibility.VISIBLE
+): ReadOnlyProperty<RvmPropertiesSupport, RvmCheckControl> = RvmPropertyDelegate.def {
+    RvmCheckControl(
         initialChecked = initialChecked,
         initialEnabled = initialEnabled,
         initialVisibility = initialVisibility
@@ -68,10 +68,10 @@ fun RVM.checkControl(
 fun SavedStateHandle.checkControl(
     initialChecked: Boolean = false,
     initialEnabled: Boolean = true,
-    initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmViewModelComponent, CheckControl> = visualControlDelegate(
+    initialVisibility: RvmBaseVisualControl.Visibility = RvmBaseVisualControl.Visibility.VISIBLE
+): ReadOnlyProperty<RvmViewModelComponent, RvmCheckControl> = visualControlDelegate(
     initialValue = initialChecked,
     initialEnabled = initialEnabled,
     initialVisibility = initialVisibility,
-    initControl = controlDefaultConstructor(::CheckControl)
+    initControl = rvmControlDefaultConstructor(::RvmCheckControl)
 )

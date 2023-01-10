@@ -10,11 +10,11 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 import kotlin.properties.ReadOnlyProperty
 
-typealias DisplayableAction<T> = (isVisible: Boolean, data: T?) -> Unit
+typealias RvmDisplayableAction<T> = (isVisible: Boolean, data: T?) -> Unit
 
-class DisplayableControl<T : Any> internal constructor(
+class RvmDisplayableControl<T : Any> internal constructor(
     debounceInterval: Long? = null
-) : BaseControl<DisplayableControl<T>.Binder>() {
+) : RvmBaseControl<RvmDisplayableControl<T>.Binder>() {
 
     sealed class Action<out T : Any> : Parcelable {
 
@@ -48,9 +48,9 @@ class DisplayableControl<T : Any> internal constructor(
     ) : ViewBinder(rvmViewComponent) {
 
         @RvmBinderDslMarker
-        fun bind(action: DisplayableAction<T>) {
+        fun bind(action: RvmDisplayableAction<T>) {
             rvmViewComponentRef.get()?.run {
-                this@DisplayableControl.action.observe {
+                this@RvmDisplayableControl.action.observe {
                     action.invoke(it.isShowing, it.getShowingValue())
                 }
             }
@@ -62,7 +62,7 @@ class DisplayableControl<T : Any> internal constructor(
             onHide: () -> Unit
         ) {
             rvmViewComponentRef.get()?.run {
-                this@DisplayableControl.action.observe {
+                this@RvmDisplayableControl.action.observe {
                     when (it) {
                         is Action.Show<T> -> onShow.invoke(it.data)
                         else -> onHide.invoke()
@@ -79,18 +79,18 @@ class DisplayableControl<T : Any> internal constructor(
 @RvmDslMarker
 fun <T : Any> RVM.displayableControl(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmPropertiesSupport, DisplayableControl<T>> = RvmPropertyDelegate.def {
-    DisplayableControl(debounceInterval)
+): ReadOnlyProperty<RvmPropertiesSupport, RvmDisplayableControl<T>> = RvmPropertyDelegate.def {
+    RvmDisplayableControl(debounceInterval)
 }
 
 @RvmDslMarker
 fun <T : Any> SavedStateHandle.displayableControl(
     debounceInterval: Long? = null
-): ReadOnlyProperty<RvmViewModelComponent, DisplayableControl<T>> = delegate { thisRef, sh, key ->
+): ReadOnlyProperty<RvmViewModelComponent, RvmDisplayableControl<T>> = delegate { thisRef, sh, key ->
     val actionKey = "$key.action"
-    val control = DisplayableControl<T>(debounceInterval)
+    val control = RvmDisplayableControl<T>(debounceInterval)
     thisRef.run {
-        control.action.setValue(sh[actionKey] ?: DisplayableControl.Action.Hide)
+        control.action.setValue(sh[actionKey] ?: RvmDisplayableControl.Action.Hide)
         control.action.viewFlowable
             .subscribe { sh[actionKey] = it }
             .autoDispose()

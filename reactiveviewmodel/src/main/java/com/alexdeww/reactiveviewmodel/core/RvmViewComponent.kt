@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.alexdeww.reactiveviewmodel.core.RvmAutoDisposableSupport.StoreKey
 import com.alexdeww.reactiveviewmodel.core.property.RvmObservableProperty
-import com.alexdeww.reactiveviewmodel.widget.BaseControl
+import com.alexdeww.reactiveviewmodel.widget.RvmBaseControl
 import io.reactivex.rxjava3.disposables.Disposable
 
 interface RvmViewComponent : RvmAutoDisposableSupport {
@@ -27,7 +27,7 @@ interface RvmViewComponent : RvmAutoDisposableSupport {
     fun <T : Any> RvmObservableProperty<T>.observe(action: OnLiveDataAction<T>): Observer<T> =
         observe(componentLifecycleOwner, action)
 
-    val <B : BaseControl.ViewBinder, C : BaseControl<B>> C.binder: B
+    val <B : RvmBaseControl.ViewBinder, C : RvmBaseControl<B>> C.binder: B
         get() = getBinder(this@RvmViewComponent)
 
 }

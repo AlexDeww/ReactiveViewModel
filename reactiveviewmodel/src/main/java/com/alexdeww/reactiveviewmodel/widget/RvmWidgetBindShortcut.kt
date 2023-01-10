@@ -12,36 +12,36 @@ import com.google.android.material.textfield.TextInputLayout
 interface RvmWidgetBindShortcut : RvmViewComponent {
 
     @RvmBinderDslMarker
-    fun CheckControl.bindTo(
+    fun RvmCheckControl.bindTo(
         compoundButton: CompoundButton,
         bindEnable: Boolean = true,
         bindVisible: Boolean = true
     ) = binder.bindTo(compoundButton, bindEnable, bindVisible)
 
     @RvmBinderDslMarker
-    fun <T : Any, R : Any, D : Any> DialogControl<T, R>.bindTo(
-        dialogHandlerListener: DialogHandlerListener<D>,
-        dialogCreator: DialogCreator<T, R, D>,
+    fun <T : Any, R : Any, D : Any> RvmDialogControl<T, R>.bindTo(
+        dialogHandlerListener: RvmDialogHandlerListener<D>,
+        dialogCreator: RvmDialogCreator<T, R, D>,
     ) = binder.bindTo(dialogHandlerListener, dialogCreator)
 
     @RvmBinderDslMarker
-    fun <T : Any, R : Any> DialogControl<T, R>.bindTo(
-        dialogCreator: DialogCreator<T, R, Dialog>
+    fun <T : Any, R : Any> RvmDialogControl<T, R>.bindTo(
+        dialogCreator: RvmDialogCreator<T, R, Dialog>
     ) = binder.bindTo(dialogCreator)
 
     @RvmBinderDslMarker
-    fun <T : Any> DisplayableControl<T>.bind(
-        action: DisplayableAction<T>
+    fun <T : Any> RvmDisplayableControl<T>.bind(
+        action: RvmDisplayableAction<T>
     ) = binder.bind(action)
 
     @RvmBinderDslMarker
-    fun <T : Any> DisplayableControl<T>.bind(
+    fun <T : Any> RvmDisplayableControl<T>.bind(
         onShow: (T) -> Unit,
         onHide: () -> Unit
     ) = binder.bind(onShow, onHide)
 
     @RvmBinderDslMarker
-    fun InputControl.bindTo(
+    fun RvmInputControl.bindTo(
         editText: EditText,
         bindError: Boolean = false,
         bindEnable: Boolean = true,
@@ -49,7 +49,7 @@ interface RvmWidgetBindShortcut : RvmViewComponent {
     ) = binder.bindTo(editText, bindError, bindEnable, bindVisible)
 
     @RvmBinderDslMarker
-    fun InputControl.bindTo(
+    fun RvmInputControl.bindTo(
         textInputLayout: TextInputLayout,
         bindError: Boolean = false,
         bindEnable: Boolean = true,
@@ -57,7 +57,7 @@ interface RvmWidgetBindShortcut : RvmViewComponent {
     ) = binder.bindTo(textInputLayout, bindError, bindEnable, bindVisible)
 
     @RvmBinderDslMarker
-    fun RatingControl.bindTo(
+    fun RvmRatingControl.bindTo(
         ratingBar: RatingBar,
         bindEnable: Boolean = true,
         bindVisible: Boolean = true

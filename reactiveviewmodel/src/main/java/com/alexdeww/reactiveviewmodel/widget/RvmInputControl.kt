@@ -13,13 +13,13 @@ import kotlin.properties.ReadOnlyProperty
 
 typealias FormatterAction = (text: String) -> String
 
-class InputControl internal constructor(
+class RvmInputControl internal constructor(
     initialText: String,
     private val hideErrorOnUserInput: Boolean,
     formatter: FormatterAction?,
     initialEnabled: Boolean,
     initialVisibility: Visibility
-) : BaseVisualControl<String, InputControl.Binder>(
+) : RvmBaseVisualControl<String, RvmInputControl.Binder>(
     initialValue = initialText,
     initialEnabled = initialEnabled,
     initialVisibility = initialVisibility
@@ -42,7 +42,7 @@ class InputControl internal constructor(
         rvmViewComponent: RvmViewComponent
     ) : BaseBinder<String, View>(rvmViewComponent) {
 
-        override val control: BaseVisualControl<String, *> get() = this@InputControl
+        override val control: RvmBaseVisualControl<String, *> get() = this@RvmInputControl
 
         @RvmBinderDslMarker
         fun bindTo(
@@ -75,7 +75,7 @@ class InputControl internal constructor(
         )
 
         @Suppress("LongParameterList")
-        private fun InputControl.bindTo(
+        private fun RvmInputControl.bindTo(
             view: View,
             editText: EditText,
             actionOnError: (String) -> Unit,
@@ -120,9 +120,9 @@ fun RVM.inputControl(
     hideErrorOnUserInput: Boolean = true,
     formatter: FormatterAction? = null,
     initialEnabled: Boolean = true,
-    initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmPropertiesSupport, InputControl> = RvmPropertyDelegate.def {
-    InputControl(
+    initialVisibility: RvmBaseVisualControl.Visibility = RvmBaseVisualControl.Visibility.VISIBLE
+): ReadOnlyProperty<RvmPropertiesSupport, RvmInputControl> = RvmPropertyDelegate.def {
+    RvmInputControl(
         initialText = initialText,
         hideErrorOnUserInput = hideErrorOnUserInput,
         formatter = formatter,
@@ -137,13 +137,13 @@ fun SavedStateHandle.inputControl(
     hideErrorOnUserInput: Boolean = true,
     formatter: FormatterAction? = null,
     initialEnabled: Boolean = true,
-    initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmViewModelComponent, InputControl> = visualControlDelegate(
+    initialVisibility: RvmBaseVisualControl.Visibility = RvmBaseVisualControl.Visibility.VISIBLE
+): ReadOnlyProperty<RvmViewModelComponent, RvmInputControl> = visualControlDelegate(
     initialValue = initialText,
     initialEnabled = initialEnabled,
     initialVisibility = initialVisibility,
     initControl = { value, isEnabled, visibility, _, _ ->
-        InputControl(
+        RvmInputControl(
             initialText = value,
             hideErrorOnUserInput = hideErrorOnUserInput,
             formatter = formatter,

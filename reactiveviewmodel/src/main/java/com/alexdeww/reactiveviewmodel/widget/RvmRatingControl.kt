@@ -10,11 +10,11 @@ import com.alexdeww.reactiveviewmodel.core.utils.RvmPropertyDelegate
 import kotlin.properties.ReadOnlyProperty
 
 @SuppressLint("CheckResult")
-class RatingControl internal constructor(
+class RvmRatingControl internal constructor(
     initialValue: Float,
     initialEnabled: Boolean,
     initialVisibility: Visibility
-) : BaseVisualControl<Float, RatingControl.Binder>(
+) : RvmBaseVisualControl<Float, RvmRatingControl.Binder>(
     initialValue = initialValue,
     initialEnabled = initialEnabled,
     initialVisibility = initialVisibility
@@ -26,7 +26,7 @@ class RatingControl internal constructor(
         rvmViewComponent: RvmViewComponent
     ) : BaseBinder<Float, RatingBar>(rvmViewComponent) {
 
-        override val control: BaseVisualControl<Float, *> get() = this@RatingControl
+        override val control: RvmBaseVisualControl<Float, *> get() = this@RvmRatingControl
 
         @RvmBinderDslMarker
         fun bindTo(
@@ -55,9 +55,9 @@ class RatingControl internal constructor(
 fun RVM.ratingControl(
     initialValue: Float = 0f,
     initialEnabled: Boolean = true,
-    initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmPropertiesSupport, RatingControl> = RvmPropertyDelegate.def {
-    RatingControl(
+    initialVisibility: RvmBaseVisualControl.Visibility = RvmBaseVisualControl.Visibility.VISIBLE
+): ReadOnlyProperty<RvmPropertiesSupport, RvmRatingControl> = RvmPropertyDelegate.def {
+    RvmRatingControl(
         initialValue = initialValue,
         initialEnabled = initialEnabled,
         initialVisibility = initialVisibility
@@ -68,10 +68,10 @@ fun RVM.ratingControl(
 fun SavedStateHandle.ratingControl(
     initialValue: Float = 0f,
     initialEnabled: Boolean = true,
-    initialVisibility: BaseVisualControl.Visibility = BaseVisualControl.Visibility.VISIBLE
-): ReadOnlyProperty<RvmViewModelComponent, RatingControl> = visualControlDelegate(
+    initialVisibility: RvmBaseVisualControl.Visibility = RvmBaseVisualControl.Visibility.VISIBLE
+): ReadOnlyProperty<RvmViewModelComponent, RvmRatingControl> = visualControlDelegate(
     initialValue = initialValue,
     initialEnabled = initialEnabled,
     initialVisibility = initialVisibility,
-    initControl = controlDefaultConstructor(::RatingControl)
+    initControl = rvmControlDefaultConstructor(::RvmRatingControl)
 )

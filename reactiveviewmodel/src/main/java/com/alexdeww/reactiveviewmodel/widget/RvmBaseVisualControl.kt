@@ -5,37 +5,37 @@ import androidx.annotation.CallSuper
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.SavedStateHandle
 import com.alexdeww.reactiveviewmodel.core.*
-import com.alexdeww.reactiveviewmodel.widget.BaseVisualControl.Visibility
+import com.alexdeww.reactiveviewmodel.widget.RvmBaseVisualControl.Visibility
 import io.reactivex.rxjava3.functions.Consumer
 import java.lang.ref.WeakReference
 import kotlin.properties.ReadOnlyProperty
 
-typealias ActionOnValueChanged<T> = (newValue: T) -> Unit
-typealias ActionOnActive<T> = VisualControlLiveDataMediator<T>.() -> Unit
-typealias ActionOnInactive<T> = VisualControlLiveDataMediator<T>.() -> Unit
+typealias RvmActionOnValueChanged<T> = (newValue: T) -> Unit
+typealias RvmActionOnActive<T> = RvmVisualControlLiveDataMediator<T>.() -> Unit
+typealias RvmActionOnInactive<T> = RvmVisualControlLiveDataMediator<T>.() -> Unit
 
-abstract class BaseVisualControl<T : Any, B : BaseVisualControl.BaseBinder<T, *>>(
+abstract class RvmBaseVisualControl<T : Any, B : RvmBaseVisualControl.BaseBinder<T, *>>(
     initialValue: T,
     initialEnabled: Boolean,
     initialVisibility: Visibility
-) : BaseControl<B>() {
+) : RvmBaseControl<B>() {
 
     abstract class BaseBinder<T : Any, V : View>(
         rvmViewComponent: RvmViewComponent
     ) : ViewBinder(rvmViewComponent) {
 
-        protected abstract val control: BaseVisualControl<T, *>
+        protected abstract val control: RvmBaseVisualControl<T, *>
 
         @Suppress("LongParameterList")
         protected fun bindTo(
             view: V,
             bindEnable: Boolean,
             bindVisible: Boolean,
-            onValueChanged: ActionOnValueChanged<T>,
-            onActiveAction: ActionOnActive<T>,
-            onInactiveAction: ActionOnInactive<T>
+            onValueChanged: RvmActionOnValueChanged<T>,
+            onActiveAction: RvmActionOnActive<T>,
+            onInactiveAction: RvmActionOnInactive<T>
         ) {
-            val liveData = VisualControlLiveDataMediator(
+            val liveData = RvmVisualControlLiveDataMediator(
                 control = control,
                 view = view,
                 bindEnable = bindEnable,
@@ -78,20 +78,20 @@ abstract class BaseVisualControl<T : Any, B : BaseVisualControl.BaseBinder<T, *>
 }
 
 @Suppress("LongParameterList")
-class VisualControlLiveDataMediator<T : Any> internal constructor(
-    control: BaseVisualControl<T, *>,
+class RvmVisualControlLiveDataMediator<T : Any> internal constructor(
+    control: RvmBaseVisualControl<T, *>,
     view: View,
     private val bindEnable: Boolean,
     private val bindVisible: Boolean,
-    private val onValueChanged: ActionOnValueChanged<T>,
-    private val onActiveAction: ActionOnActive<T>,
-    private val onInactiveAction: ActionOnInactive<T>
+    private val onValueChanged: RvmActionOnValueChanged<T>,
+    private val onActiveAction: RvmActionOnActive<T>,
+    private val onInactiveAction: RvmActionOnInactive<T>
 ) : MediatorLiveData<Unit>() {
 
     private val viewRef = WeakReference(view)
     private val view: View? get() = viewRef.get()
     private val controlRef = WeakReference(control)
-    private val control: BaseVisualControl<T, *>? get() = controlRef.get()
+    private val control: RvmBaseVisualControl<T, *>? get() = controlRef.get()
     private var isEditing: Boolean = false
 
     val changeValueConsumer = Consumer<T> {
@@ -124,7 +124,7 @@ class VisualControlLiveDataMediator<T : Any> internal constructor(
 
 }
 
-typealias InitControl<T, C> = (
+typealias RvmInitControl<T, C> = (
     value: T,
     isEnabled: Boolean,
     visibility: Visibility,
@@ -132,11 +132,11 @@ typealias InitControl<T, C> = (
     key: String,
 ) -> C
 
-fun <T : Any, C : BaseVisualControl<T, *>> SavedStateHandle.visualControlDelegate(
+fun <T : Any, C : RvmBaseVisualControl<T, *>> SavedStateHandle.visualControlDelegate(
     initialValue: T,
     initialEnabled: Boolean,
     initialVisibility: Visibility,
-    initControl: InitControl<T, C>,
+    initControl: RvmInitControl<T, C>,
     watcher: RvmViewModelComponent.(stateHandle: SavedStateHandle, key: String) -> Unit = { _, _ -> }
 ): ReadOnlyProperty<RvmViewModelComponent, C> = delegate { thisRef, stateHandle, key ->
     val dataKey = "$key.data"
@@ -163,10 +163,10 @@ fun <T : Any, C : BaseVisualControl<T, *>> SavedStateHandle.visualControlDelegat
     control
 }
 
-typealias ControlDefaultConstructor<T, C> = (value: T, isEnabled: Boolean, visibility: Visibility) -> C
+typealias RvmControlDefaultConstructor<T, C> = (value: T, isEnabled: Boolean, visibility: Visibility) -> C
 
-inline fun <T : Any, C : BaseVisualControl<T, *>> controlDefaultConstructor(
-    crossinline defaultConstructor: ControlDefaultConstructor<T, C>
-): InitControl<T, C> = { value: T, isEnabled: Boolean, visibility: Visibility, _, _ ->
+inline fun <T : Any, C : RvmBaseVisualControl<T, *>> rvmControlDefaultConstructor(
+    crossinline defaultConstructor: RvmControlDefaultConstructor<T, C>
+): RvmInitControl<T, C> = { value: T, isEnabled: Boolean, visibility: Visibility, _, _ ->
     defaultConstructor(value, isEnabled, visibility)
 }

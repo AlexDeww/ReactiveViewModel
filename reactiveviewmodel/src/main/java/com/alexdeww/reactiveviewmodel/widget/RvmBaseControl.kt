@@ -11,7 +11,7 @@ import io.reactivex.rxjava3.functions.Consumer
 import java.lang.ref.WeakReference
 
 @Suppress("UnnecessaryAbstractClass")
-abstract class BaseControl<B : BaseControl.ViewBinder> : RvmPropertiesSupport {
+abstract class RvmBaseControl<B : RvmBaseControl.ViewBinder> : RvmPropertiesSupport {
 
     private val defaultPropertiesSupport = object : RvmPropertiesSupport {}
 
