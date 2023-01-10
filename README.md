@@ -108,8 +108,8 @@ val state by savedStateHandle.state<DataType>(initialValue = null or data)
 ```
 
 ### RvmStateProjection
-Почти тоже самое, что и **RvmState**, но отличается тем, что никто не может передавать данные няпрямую.
- - Никто не может передавать данные няпрямую. **RvmStateProjection** может получать данные от источников: **Observable**, **RvmState**, **RvmStateProjection**, либо объекта наследника **RvmPropertyBase** и **RvmValueProperty**.
+Почти тоже самое, что и **RvmState**, но отличается тем, что никто не может передавать данные напрямую.
+ - Никто не может передавать данные напрямую. **RvmStateProjection** может получать данные от источников: **Observable**, **RvmState**, **RvmStateProjection**, либо объекта наследника **RvmPropertyBase** и **RvmValueProperty**.
 
 ```kotlin
 val state by RVM.state<DataType>(initialValue = null or data)
