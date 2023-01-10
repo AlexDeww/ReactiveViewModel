@@ -17,12 +17,12 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
  * либо объекта наследника [RvmPropertyBase] и [RvmValueProperty].
  */
 class RvmStateProjection<T : Any> internal constructor(
-    initValue: T? = null,
+    initialValue: T? = null,
 ) : RvmPropertyBase<T>(), RvmValueProperty<T> {
 
-    private val subject = when (initValue) {
+    private val subject = when (initialValue) {
         null -> BehaviorSubject.create()
-        else -> BehaviorSubject.createDefault(initValue)
+        else -> BehaviorSubject.createDefault(initialValue)
     }
     private val serializedSubject = subject.toSerialized()
 

@@ -18,13 +18,13 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
  * * Каждый подписчик в первую очередь получит последннее сохраненное значение.
  */
 class RvmState<T : Any> internal constructor(
-    initValue: T? = null,
+    initialValue: T? = null,
     debounceInterval: Long? = null
 ) : RvmProperty<T>(), RvmMutableValueProperty<T> {
 
-    private val subject = when (initValue) {
+    private val subject = when (initialValue) {
         null -> BehaviorSubject.create()
-        else -> BehaviorSubject.createDefault(initValue)
+        else -> BehaviorSubject.createDefault(initialValue)
     }
     private val serializedSubject = subject.toSerialized()
 

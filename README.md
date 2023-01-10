@@ -26,7 +26,7 @@ class SomeViewModel(
     savedState: SavedStateHandle
 ) : ReactiveViewModel() {
 
-    val progressVisible by RVM.progressState(initValue = false)
+    val progressVisible by RVM.progressState(initialValue = false)
     val tryCount by savedState.state(initialValue = 5)
     
     val tryCountLabelVisible by RVM.stateProjection(tryCount) { it > 0 }

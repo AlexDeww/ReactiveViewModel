@@ -37,10 +37,10 @@ interface RvmPropertiesSupport {
 @Suppress("unused")
 @RvmDslMarker
 fun <T : Any> RVM.state(
-    initValue: T? = null,
+    initialValue: T? = null,
     debounceInterval: Long? = null
 ): ReadOnlyProperty<RvmPropertiesSupport, RvmState<T>> = RvmPropertyDelegate.def {
-    RvmState(initValue, debounceInterval)
+    RvmState(initialValue, debounceInterval)
 }
 
 @Suppress("unused")
@@ -65,10 +65,10 @@ fun <T : Any, R : Any, P> RVM.stateProjection(
 @Suppress("unused")
 @RvmDslMarker
 fun RVM.progressState(
-    initValue: Boolean? = null,
+    initialValue: Boolean? = null,
     debounceInterval: Long = DEF_PROGRESS_DEBOUNCE_INTERVAL
 ): ReadOnlyProperty<RvmPropertiesSupport, RvmState<Boolean>> = state(
-    initValue = initValue,
+    initialValue = initialValue,
     debounceInterval = debounceInterval
 )
 
