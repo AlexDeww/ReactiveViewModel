@@ -5,7 +5,7 @@ buildscript {
         min_sdk_version = 17
         sdk_version = 31
 
-        kotlin_version = '1.7.20'
+        kotlin_version = '1.7.21'
         rxjava_version = '3.1.2'
         rxandroid_version = '3.0.0'
         archx_version = '2.2.0'
