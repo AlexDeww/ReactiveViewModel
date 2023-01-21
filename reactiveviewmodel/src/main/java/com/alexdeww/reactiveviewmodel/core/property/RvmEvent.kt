@@ -9,18 +9,32 @@ import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Event<T : Any> internal constructor(debounceInterval: Long? = null) {
+/**
+ * В основном предназначен для передачи событий или данных из ViewModel во View.
+ *
+ * * Передавать данные в [RvmEvent] могут только наследники
+ * [RvmPropertiesSupport][com.alexdeww.reactiveviewmodel.core.RvmPropertiesSupport].
+ *
+ * * Хранит последнее переданное значение пока не появится подписчик.
+ * Только первый подписчик получит последнее сохраненное значение,
+ * все последующие подписки, будут получать только новые значения.
+ *
+ * * Пока есть активная подписка, данные не сохраняются.
+ */
+class RvmEvent<T : Any> internal constructor(
+    debounceInterval: Long? = null
+) : RvmProperty<T>(), RvmCallableProperty<T> {
 
     private val subject = BehaviorSubject.create<T>()
     private val serializedSubject = subject.toSerialized()
     private val isPending = AtomicBoolean(false)
 
-    internal val consumer: Consumer<T> = Consumer {
+    override val consumer: Consumer<T> = Consumer {
         isPending.set(true)
         serializedSubject.onNext(it)
     }
 
-    internal val observable: Observable<T> = Observable
+    override val observable: Observable<T> = Observable
         .create<T> { emitter ->
             val skipCount = if (!isPending.get() && subject.hasValue()) 1L else 0L
             val d = serializedSubject.skip(skipCount).subscribe {
@@ -32,8 +46,8 @@ class Event<T : Any> internal constructor(debounceInterval: Long? = null) {
         .letDebounce(debounceInterval)
         .share()
 
-    val liveData: LiveData<T> by lazy { EventLiveData() }
-    val viewFlowable: Flowable<T> by lazy { observable.toViewFlowable() }
+    override val liveData: LiveData<T> by lazy { EventLiveData() }
+    override val viewFlowable: Flowable<T> by lazy { observable.toViewFlowable() }
 
     private inner class EventLiveData : LiveEvent<T>() {
 

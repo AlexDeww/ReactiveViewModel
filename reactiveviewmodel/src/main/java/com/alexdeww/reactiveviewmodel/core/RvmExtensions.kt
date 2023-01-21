@@ -4,10 +4,9 @@ import android.view.View
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import com.alexdeww.reactiveviewmodel.core.property.Action
-import com.alexdeww.reactiveviewmodel.core.property.ConfirmationEvent
-import com.alexdeww.reactiveviewmodel.core.property.Event
-import com.alexdeww.reactiveviewmodel.core.property.State
+import com.alexdeww.reactiveviewmodel.core.property.RvmAction
+import com.alexdeww.reactiveviewmodel.core.property.RvmObservableProperty
+import com.alexdeww.reactiveviewmodel.core.property.RvmPropertyBase
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.functions.Function
@@ -21,33 +20,23 @@ fun <T> LiveData<T>.observe(owner: LifecycleOwner, action: OnLiveDataAction<T>):
     return observer
 }
 
-fun <T : Any> Event<T>.observe(
+fun <T : Any> RvmObservableProperty<T>.observe(
     owner: LifecycleOwner,
     action: OnLiveDataAction<T>
 ): Observer<T> = liveData.observe(owner = owner, action = action)
 
-fun <T : Any> ConfirmationEvent<T>.observe(
-    owner: LifecycleOwner,
-    action: OnLiveDataAction<T>
-): Observer<T> = liveData.observe(owner = owner, action = action)
-
-fun <T : Any> State<T>.observe(
-    owner: LifecycleOwner,
-    action: OnLiveDataAction<T>
-): Observer<T> = liveData.observe(owner = owner, action = action)
-
-fun Action<Unit>.call() = call(Unit)
+fun RvmAction<Unit>.call() = call(Unit)
 
 typealias ActionOnClick = () -> Unit
 
-fun <T : Any> Action<T>.bindOnClick(view: View, value: T, onClickAction: ActionOnClick? = null) {
+fun <T : Any> RvmAction<T>.bindOnClick(view: View, value: T, onClickAction: ActionOnClick? = null) {
     view.setOnClickListener {
         call(value)
         onClickAction?.invoke()
     }
 }
 
-fun Action<Unit>.bindOnClick(view: View, onClickAction: ActionOnClick? = null) {
+fun RvmAction<Unit>.bindOnClick(view: View, onClickAction: ActionOnClick? = null) {
     bindOnClick(view, Unit, onClickAction)
 }
 
@@ -130,6 +119,32 @@ fun Completable.bindProgressAny(progressConsumer: Consumer<Boolean>): Completabl
         .doOnError { consumerWrapper.end() }
         .doOnDispose { consumerWrapper.end() }
 }
+
+fun <T : Any> Observable<T>.untilOn(
+    vararg rvmProperty: RvmPropertyBase<*>
+): Observable<T> = takeUntil(Observable.merge(rvmProperty.map { it.observable }))
+
+fun <T : Any> Observable<T>.untilOn(
+    vararg observable: Observable<*>
+): Observable<T> = takeUntil(Observable.merge(observable.toList()))
+
+fun <T : Any> Maybe<T>.untilOn(
+    vararg rvmProperty: RvmPropertyBase<*>
+): Maybe<T> = takeUntil(Maybe.merge(rvmProperty.map { it.observable.firstElement() }))
+
+fun <T : Any> Maybe<T>.untilOn(
+    vararg maybe: Maybe<*>
+): Maybe<T> = takeUntil(Maybe.merge(maybe.toList()))
+
+fun Completable.untilOn(
+    vararg rvmProperty: RvmPropertyBase<*>
+): Completable = takeUntil(Completable.merge(rvmProperty.map {
+    it.observable.firstElement().ignoreElement()
+}))
+
+fun Completable.untilOn(
+    vararg completable: Completable
+): Completable = takeUntil(Completable.merge(completable.toList()))
 
 /**
  * Returns the [Observable] that emits items when active, and buffers them when [idle][isIdle].
